@@ -111,7 +111,6 @@ azure-devops-rtl-fixer/
 │       ├── popup.css
 │       └── popup.js
 ├── icons/
-├── scripts/generate-icons.js
 └── tests/
     ├── fixtures/rooster-editor.html
     ├── manifest.test.js
@@ -139,12 +138,6 @@ Node.js 18 or newer is sufficient. There are no runtime or development package d
 ```bash
 npm test
 npm run check
-```
-
-Regenerate the checked-in PNG icons after changing the icon generator:
-
-```bash
-npm run icons
 ```
 
 To debug DOM behavior locally, set `DEBUG` to `true` near the top of `src/content/content.js`. It is `false` by default. For Rooster, the content script logs the editor, actual line block, and nested span with their text, `dir`, inline direction, computed direction, alignment, `unicode-bidi`, and display. In the extension execution context, use `AdoRtlFixerDebug.inspect(element)` or `AdoRtlFixerDebug.inspectRooster(editor)` on demand.

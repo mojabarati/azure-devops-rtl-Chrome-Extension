@@ -26,7 +26,9 @@ body {
   margin-bottom: 20px;
 }
 
-.brand img {
+.app-logo {
+  display: block;
+  object-fit: contain;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgb(20 49 91 / 14%);
 }

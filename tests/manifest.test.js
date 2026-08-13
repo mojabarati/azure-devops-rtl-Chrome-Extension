@@ -38,6 +38,23 @@ test("every manifest file reference exists", () => {
   }
 });
 
+test("uses the supplied Azure RTL logo at every Chrome icon size", () => {
+  assert.deepEqual(manifest.icons, {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  });
+  assert.deepEqual(manifest.action.default_icon, {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png"
+  });
+
+  const popup = fs.readFileSync(path.join(projectRoot, manifest.action.default_popup), "utf8");
+  assert.match(popup, /\.\.\/\.\.\/icons\/icon48\.png/u);
+});
+
 test("content processing avoids destructive or continuously polling APIs", () => {
   const source = fs.readFileSync(path.join(projectRoot, "src/content/content.js"), "utf8");
 
