@@ -36,6 +36,17 @@
         <div id="empty-rtl" style="direction:rtl"> </div>
         <div id="english-block" style="direction:ltr">This is an English paragraph.</div>
 
+        <ol id="ordered-list">
+          <li id="ordered-mixed" style="direction:ltr"><div><span>Portfolio Lifecycle Status برابر Activated است.</span></div></li>
+          <li id="ordered-persian" style="direction:ltr">کاربر به Dashboard دسترسی دارد.</li>
+          <li id="ordered-english" style="direction:ltr">Portfolio Lifecycle Status is Activated.</li>
+        </ol>
+
+        <ul id="unordered-list">
+          <li id="unordered-mixed" style="direction:ltr"><span>Portfolio Lifecycle Status برابر Activated است.</span></li>
+          <li id="unordered-english" style="direction:ltr">Dashboard access is available.</li>
+        </ul>
+
         <div id="media-container">
           <div style="direction:ltr"><br></div>
           <img alt="fixture image" width="1" height="1" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">
@@ -99,6 +110,11 @@
         const onBlock = snapshot(persianBlock);
         const onEditor = snapshot(editor);
         const onSpan = snapshot(persianSpan);
+        const orderedMixed = document.querySelector("#ordered-mixed");
+        const orderedPersian = document.querySelector("#ordered-persian");
+        const orderedEnglish = document.querySelector("#ordered-english");
+        const unorderedMixed = document.querySelector("#unordered-mixed");
+        const unorderedEnglish = document.querySelector("#unordered-english");
         const assertions = [
           assertion("actual Persian DIV receives ado-rtl-text-block", persianBlock.classList.contains("ado-rtl-text-block")),
           assertion("nested span receives no RTL class", !persianSpan.classList.contains("ado-rtl-text-block")),
@@ -114,6 +130,20 @@
           assertion("empty LTR block is ignored", !document.querySelector("#empty-ltr").classList.contains("ado-rtl-text-block")),
           assertion("empty RTL block is ignored", !document.querySelector("#empty-rtl").classList.contains("ado-rtl-text-block")),
           assertion("English block is unchanged", !document.querySelector("#english-block").classList.contains("ado-rtl-text-block")),
+          assertion("English-first mixed OL item receives RTL class", orderedMixed.classList.contains("ado-rtl-text-block")),
+          assertion("Persian-first OL item receives RTL class", orderedPersian.classList.contains("ado-rtl-text-block")),
+          assertion("English-only OL item remains unchanged", !orderedEnglish.classList.contains("ado-rtl-text-block")),
+          assertion("mixed OL item computes to RTL", getComputedStyle(orderedMixed).direction === "rtl"),
+          assertion("mixed OL marker inherits RTL direction", getComputedStyle(orderedMixed, "::marker").direction === "rtl"),
+          assertion("English-first mixed UL item receives RTL class", unorderedMixed.classList.contains("ado-rtl-text-block")),
+          assertion("English-only UL item remains unchanged", !unorderedEnglish.classList.contains("ado-rtl-text-block")),
+          assertion("mixed UL item computes to RTL", getComputedStyle(unorderedMixed).direction === "rtl"),
+          assertion("mixed UL marker inherits RTL direction", getComputedStyle(unorderedMixed, "::marker").direction === "rtl"),
+          assertion(
+            "list containers receive no RTL class",
+            !document.querySelector("#ordered-list").classList.contains("ado-rtl-text-block") &&
+              !document.querySelector("#unordered-list").classList.contains("ado-rtl-text-block")
+          ),
           assertion("image container is unchanged", !document.querySelector("#media-container").classList.contains("ado-rtl-text-block")),
           assertion("command bar is ignored", !document.querySelector(".rooster-command-bar").classList.contains("ado-rtl-text-block"))
         ];
