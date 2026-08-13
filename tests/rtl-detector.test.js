@@ -5,7 +5,6 @@ const assert = require("node:assert/strict");
 const {
   containsRtlText,
   countStrongCharacters,
-  findLtrRuns,
   getTextDirection,
   isStandaloneTechnicalText,
   normalizeText,
@@ -34,37 +33,6 @@ test("counts only strong letters, not numbers or punctuation", () => {
     rtlWords: 0,
     ltrWords: 0
   });
-});
-
-test("keeps multi-word and technical LTR runs intact", () => {
-  const text = "در ai specialist از REST API و API v2 و Node.js و feature-flag و user_id و GET /api/users و React 19 و C# و .NET استفاده شود.";
-  assert.deepEqual(findLtrRuns(text).map((run) => run.text), [
-    "ai specialist",
-    "REST API",
-    "API v2",
-    "Node.js",
-    "feature-flag",
-    "user_id",
-    "GET /api/users",
-    "React 19",
-    "C#",
-    ".NET"
-  ]);
-});
-
-test("LTR run segmentation preserves the exact original string", () => {
-  const text = "در صورت نیاز ai specialist جهت Activation اقدام کند.";
-  const runs = findLtrRuns(text);
-  let offset = 0;
-  let reconstructed = "";
-
-  for (const run of runs) {
-    reconstructed += text.slice(offset, run.start) + run.text;
-    offset = run.end;
-  }
-  reconstructed += text.slice(offset);
-
-  assert.equal(reconstructed, text);
 });
 
 test("keeps Persian paragraph direction when it contains technical terms", () => {

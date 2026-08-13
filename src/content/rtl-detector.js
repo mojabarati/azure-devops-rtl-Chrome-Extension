@@ -120,72 +120,9 @@
     return "neutral";
   }
 
-  function isTechnicalCharacter(character) {
-    return /[A-Za-z0-9._#@+:/\\-]/u.test(character);
-  }
-
-  function trimTechnicalRunEnd(text, start, end) {
-    while (end > start && /[.,:;!?/@+\\-]/u.test(text[end - 1])) {
-      end -= 1;
-    }
-    return end;
-  }
-
-  function findLtrRuns(text) {
-    if (typeof text !== "string" || !text) {
-      return [];
-    }
-
-    const runs = [];
-    let index = 0;
-
-    while (index < text.length) {
-      if (!isTechnicalCharacter(text[index])) {
-        index += 1;
-        continue;
-      }
-
-      const start = index;
-      let end = index;
-      let hasLatin = false;
-
-      while (end < text.length) {
-        if (isTechnicalCharacter(text[end])) {
-          hasLatin ||= LATIN_CHARACTER_PATTERN.test(text[end]);
-          end += 1;
-          continue;
-        }
-
-        if (/\s/u.test(text[end])) {
-          let next = end;
-          while (next < text.length && /\s/u.test(text[next])) {
-            next += 1;
-          }
-
-          if (next < text.length && isTechnicalCharacter(text[next])) {
-            end = next;
-            continue;
-          }
-        }
-
-        break;
-      }
-
-      const trimmedEnd = trimTechnicalRunEnd(text, start, end);
-      if (hasLatin && trimmedEnd > start) {
-        runs.push({ start, end: trimmedEnd, text: text.slice(start, trimmedEnd) });
-      }
-
-      index = Math.max(end, start + 1);
-    }
-
-    return runs;
-  }
-
   return Object.freeze({
     containsRtlText,
     countStrongCharacters,
-    findLtrRuns,
     getTextDirection,
     isStandaloneTechnicalText,
     normalizeText,

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Azure DevOps Rooster RTL Regression Fixture</title>
+    <link rel="stylesheet" href="../../src/content/rtl.css">
+    <style>
+      body { max-width: 920px; margin: 2rem auto; font: 16px/1.8 "Segoe UI", sans-serif; }
+      .focus-out-shell { border: 1px solid #ccc; padding: 1rem; }
+      .lean-rooster { border: 1px dashed #aaa; padding: 0.75rem; }
+      .pass { color: #087443; }
+      .fail { color: #b42318; }
+    </style>
+  </head>
+  <body>
+    <h1>Real Azure DevOps Rooster DOM fixture</h1>
+
+    <div class="focus-out-shell rooster-wrapper">
+      <div
+        id="rooster-editor"
+        aria-label="Description"
+        class="lean-rooster rooster-editor propagate-keydown-event text-element view-mode"
+        data-placeholder="Click to add Description."
+        contenteditable="true"
+        dir="ltr"
+        tabindex="0"
+        style="user-select: text;"
+        aria-multiline="true"
+        role="textbox"
+      >
+        <div id="persian-block" style="direction:ltr">
+          <span id="persian-span" style="display:inline !important">در صورتی که ai specialist پورتفولیوی خود را غیرفعال کرد بنر جهت Activation نمایش داده شود.<br></span>
+        </div>
+
+        <div id="empty-ltr" style="direction:ltr"> </div>
+        <div id="empty-rtl" style="direction:rtl"> </div>
+        <div id="english-block" style="direction:ltr">This is an English paragraph.</div>
+
+        <div id="media-container">
+          <div style="direction:ltr"><br></div>
+          <img alt="fixture image" width="1" height="1" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==">
+          <br>
+        </div>
+      </div>
+
+      <div class="rooster-command-bar">متن نوار فرمان نباید راست‌به‌چپ شود.</div>
+    </div>
+
+    <ol id="results"></ol>
+    <h2>Captured computed styles and DOM</h2>
+    <pre id="dom-output"></pre>
+
+    <script>
+      const editor = document.querySelector("#rooster-editor");
+      const persianBlock = document.querySelector("#persian-block");
+      const persianSpan = document.querySelector("#persian-span");
+      const originalText = persianBlock.textContent;
+      const originalHtml = persianBlock.outerHTML;
+      let messageListener;
+
+      window.chrome = {
+        runtime: { onMessage: { addListener(listener) { messageListener = listener; } } },
+        storage: {
+          onChanged: { addListener() {} },
+          local: { get(_defaults, callback) { callback({ rtlFixEnabled: true }); } }
+        }
+      };
+
+      function snapshot(element) {
+        const computed = getComputedStyle(element);
+        return {
+          tagName: element.tagName,
+          className: element.className,
+          inlineDirection: element.style.direction,
+          dirAttribute: element.getAttribute("dir"),
+          computedDirection: computed.direction,
+          textAlign: computed.textAlign,
+          unicodeBidi: computed.unicodeBidi,
+          display: computed.display
+        };
+      }
+
+      function assertion(name, passed, detail = "") {
+        const item = document.createElement("li");
+        item.className = passed ? "pass" : "fail";
+        item.textContent = `${passed ? "PASS" : "FAIL"}: ${name}${detail ? ` — ${detail}` : ""}`;
+        document.querySelector("#results").append(item);
+        return { name, passed, detail };
+      }
+    </script>
+    <script src="../../src/content/rtl-detector.js"></script>
+    <script src="../../src/content/azure-selectors.js"></script>
+    <script src="../../src/content/dom-utils.js"></script>
+    <script src="../../src/content/content.js"></script>
+    <script>
+      async function runFixture() {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+
+        const onBlock = snapshot(persianBlock);
+        const onEditor = snapshot(editor);
+        const onSpan = snapshot(persianSpan);
+        const assertions = [
+          assertion("actual Persian DIV receives ado-rtl-text-block", persianBlock.classList.contains("ado-rtl-text-block")),
+          assertion("nested span receives no RTL class", !persianSpan.classList.contains("ado-rtl-text-block")),
+          assertion("Rooster editor root receives no RTL class", !editor.classList.contains("ado-rtl-text-block")),
+          assertion("Azure inline direction remains ltr", persianBlock.style.direction === "ltr"),
+          assertion("actual Persian block computes to rtl", onBlock.computedDirection === "rtl", onBlock.computedDirection),
+          assertion("actual Persian block aligns right", onBlock.textAlign === "right", onBlock.textAlign),
+          assertion("Rooster editor remains computed ltr", onEditor.computedDirection === "ltr", onEditor.computedDirection),
+          assertion("Rooster dir=ltr attribute is preserved", editor.getAttribute("dir") === "ltr"),
+          assertion("span display remains inline", onSpan.display === "inline", onSpan.display),
+          assertion("no BDI wrappers are generated", !document.querySelector("bdi")),
+          assertion("exact textContent is preserved", persianBlock.textContent === originalText),
+          assertion("empty LTR block is ignored", !document.querySelector("#empty-ltr").classList.contains("ado-rtl-text-block")),
+          assertion("empty RTL block is ignored", !document.querySelector("#empty-rtl").classList.contains("ado-rtl-text-block")),
+          assertion("English block is unchanged", !document.querySelector("#english-block").classList.contains("ado-rtl-text-block")),
+          assertion("image container is unchanged", !document.querySelector("#media-container").classList.contains("ado-rtl-text-block")),
+          assertion("command bar is ignored", !document.querySelector(".rooster-command-bar").classList.contains("ado-rtl-text-block"))
+        ];
+
+        const dynamicBlock = document.createElement("div");
+        dynamicBlock.id = "dynamic-rooster-block";
+        dynamicBlock.style.direction = "ltr";
+        dynamicBlock.innerHTML = "برای این Feature یک API جدید ایجاد شود.<br>";
+        editor.append(dynamicBlock);
+        editor.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText" }));
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        assertions.push(
+          assertion("new Rooster line receives the block class", dynamicBlock.classList.contains("ado-rtl-text-block")),
+          assertion("new Rooster line computes to rtl", getComputedStyle(dynamicBlock).direction === "rtl")
+        );
+
+        const enabledHtml = persianBlock.outerHTML;
+        if (new URLSearchParams(location.search).has("hold")) {
+          window.fixtureResults = {
+            passed: assertions.every((result) => result.passed),
+            assertions,
+            on: { editor: onEditor, block: onBlock, span: onSpan },
+            originalText,
+            originalHtml,
+            enabledHtml
+          };
+          document.querySelector("#dom-output").textContent = JSON.stringify(window.fixtureResults, null, 2);
+          document.title = window.fixtureResults.passed ? "PASS — Rooster RTL ON" : "FAIL — Rooster RTL ON";
+          return;
+        }
+
+        dynamicBlock.textContent = "This line is now English only.";
+        editor.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText" }));
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        assertions.push(
+          assertion("input update removes class from English-only line", !dynamicBlock.classList.contains("ado-rtl-text-block")),
+          assertion("English-only line returns to inline LTR", getComputedStyle(dynamicBlock).direction === "ltr")
+        );
+
+        messageListener({ type: "ADO_RTL_SET_ENABLED", enabled: false }, null, () => {});
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        const offBlock = snapshot(persianBlock);
+        const offEditor = snapshot(editor);
+        assertions.push(
+          assertion("disable removes block class", !persianBlock.classList.contains("ado-rtl-text-block")),
+          assertion("disable removes extension-created class attribute", !persianBlock.hasAttribute("class")),
+          assertion("disable restores computed inline LTR", offBlock.computedDirection === "ltr", offBlock.computedDirection),
+          assertion("disable preserves inline direction", persianBlock.style.direction === "ltr"),
+          assertion("disable preserves exact text", persianBlock.textContent === originalText),
+          assertion("editor remains LTR after disable", offEditor.computedDirection === "ltr")
+        );
+
+        window.fixtureResults = {
+          passed: assertions.every((result) => result.passed),
+          assertions,
+          on: { editor: onEditor, block: onBlock, span: onSpan },
+          off: { editor: offEditor, block: offBlock },
+          originalText,
+          originalHtml,
+          enabledHtml,
+          disabledHtml: persianBlock.outerHTML
+        };
+        document.querySelector("#dom-output").textContent = JSON.stringify(window.fixtureResults, null, 2);
+        document.title = window.fixtureResults.passed ? "PASS — Azure DevOps Rooster RTL Fixer" : "FAIL — Azure DevOps Rooster RTL Fixer";
+      }
+
+      runFixture();
+    </script>
+  </body>
+</html>

@@ -3,10 +3,9 @@
 
   const DEBUG = false;
   const STORAGE_KEY = "rtlFixEnabled";
-  const RTL_CLASS = "ado-rtl-block";
-  const CONFLICT_CLASS = "ado-rtl-conflict-reset";
-  const GENERATED_ATTRIBUTE = "data-ado-rtl-generated";
+  const RTL_CLASS = "ado-rtl-text-block";
   const MAX_BLOCKS_PER_SLICE = 100;
+  const ROOSTER_INPUT_DELAY_MS = 80;
   const detector = globalThis.AdoRtlDetector;
   const selectors = globalThis.AdoRtlSelectors;
   const domUtils = globalThis.AdoRtlDomUtils;
@@ -20,371 +19,119 @@
   let flushScheduled = false;
   const pendingRoots = new Set();
   const modifiedBlocks = new Set();
-  const conflictResets = new Set();
-  const generatedIsolates = new Set();
-  const originalBlockState = new WeakMap();
-
-  function debug(...args) {
-    if (DEBUG) {
-      console.debug("[ADO RTL Fixer]", ...args);
-    }
-  }
+  const originalClassState = new WeakMap();
+  const roosterInputTimers = new Map();
 
   function isElement(node) {
     return node?.nodeType === Node.ELEMENT_NODE;
   }
 
-  function isEditable(element) {
-    return Boolean(element?.matches?.(selectors.editable));
+  function isRoosterEditor(element) {
+    return Boolean(element?.matches?.(selectors.roosterEditor));
   }
 
-  function textFor(element) {
-    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-      return element.value;
-    }
-    return element.textContent || "";
+  function meaningfulText(element) {
+    const text = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement
+      ? element.value
+      : element.textContent || "";
+
+    return text.replace(/[\s\u200b-\u200d\u2060\ufeff]/gu, "").length > 0 ? text : "";
   }
 
-  function bidiSnapshot(element) {
-    const computed = getComputedStyle(element);
+  function directionSnapshot(element) {
+    const style = getComputedStyle(element);
     return {
-      tagName: element.tagName,
-      className: String(element.className || ""),
-      dir: element.getAttribute("dir"),
-      direction: computed.direction,
-      unicodeBidi: computed.unicodeBidi,
-      display: computed.display
+      element,
+      text: element.textContent?.trim(),
+      dirAttribute: element.getAttribute("dir"),
+      inlineDirection: element.style?.direction || "",
+      computedDirection: style.direction,
+      textAlign: style.textAlign,
+      unicodeBidi: style.unicodeBidi,
+      display: style.display
     };
   }
 
-  function inspectBidiBlock(element, force = false) {
-    if (!force && !DEBUG) {
+  function debugDirection(element, force = false) {
+    if (element && (DEBUG || force)) {
+      console.log("[ADO RTL Fixer]", directionSnapshot(element));
+    }
+  }
+
+  function debugRoosterContext(block) {
+    if (!DEBUG) {
       return;
     }
 
-    const block = element?.closest?.(`.${RTL_CLASS}`) || element;
-    if (!block) {
-      return;
+    const editor = block.closest(selectors.roosterEditor);
+    if (editor) {
+      debugDirection(editor);
+      debugDirection(block);
+      const span = block.querySelector("span");
+      if (span) {
+        debugDirection(span);
+      }
     }
-
-    console.groupCollapsed("[ADO RTL Fixer] RTL block detected");
-    console.log("text:", block.textContent);
-    console.log("block:", bidiSnapshot(block));
-
-    let ancestor = block.parentElement;
-    for (let index = 1; ancestor && index <= 3; index += 1) {
-      console.log(`ancestor #${index}:`, bidiSnapshot(ancestor));
-      ancestor = ancestor.parentElement;
-    }
-
-    for (const [index, child] of [...block.children].entries()) {
-      console.log(`child #${index + 1}:`, bidiSnapshot(child));
-    }
-    console.groupEnd();
   }
 
   globalThis.AdoRtlFixerDebug = Object.freeze({
     inspect(element) {
-      inspectBidiBlock(element, true);
+      debugDirection(element, true);
+    },
+    inspectRooster(editor) {
+      if (!isRoosterEditor(editor)) {
+        return;
+      }
+      debugDirection(editor, true);
+      for (const block of collectBlocks(editor)) {
+        debugDirection(block, true);
+        const span = block.querySelector?.("span");
+        if (span) {
+          debugDirection(span, true);
+        }
+      }
     }
   });
 
-  function restoreConflict(element) {
-    if (!conflictResets.has(element)) {
-      return;
-    }
-    element.classList.remove(CONFLICT_CLASS);
-    conflictResets.delete(element);
-  }
-
-  function restoreConflictsWithin(block) {
-    for (const element of [...conflictResets]) {
-      if (element === block || block.contains(element)) {
-        restoreConflict(element);
-      }
-    }
-  }
-
-  function unwrapIsolate(isolate) {
-    if (!isolate?.parentNode) {
-      generatedIsolates.delete(isolate);
-      return;
-    }
-
-    const parent = isolate.parentNode;
-    while (isolate.firstChild) {
-      parent.insertBefore(isolate.firstChild, isolate);
-    }
-    isolate.remove();
-    generatedIsolates.delete(isolate);
-  }
-
-  function unwrapIsolatesWithin(block) {
-    const isolates = block.querySelectorAll(`bdi[${GENERATED_ATTRIBUTE}='true']`);
-    for (const isolate of isolates) {
-      unwrapIsolate(isolate);
+  function applyBlock(block) {
+    if (!block.classList.contains(RTL_CLASS)) {
+      originalClassState.set(block, {
+        hadClassAttribute: block.hasAttribute("class")
+      });
+      block.classList.add(RTL_CLASS);
+      modifiedBlocks.add(block);
     }
   }
 
   function restoreBlock(block) {
-    const original = originalBlockState.get(block);
-    if (!original) {
+    if (!modifiedBlocks.has(block)) {
       return;
     }
-
-    unwrapIsolatesWithin(block);
-    restoreConflictsWithin(block);
-
-    if (original.addedClass) {
-      block.classList.remove(RTL_CLASS);
+    block.classList.remove(RTL_CLASS);
+    if (!originalClassState.get(block)?.hadClassAttribute && block.getAttribute("class") === "") {
+      block.removeAttribute("class");
     }
-
-    if (original.hadDir) {
-      block.setAttribute("dir", original.dir);
-    } else {
-      block.removeAttribute("dir");
-    }
-
-    originalBlockState.delete(block);
+    originalClassState.delete(block);
     modifiedBlocks.delete(block);
   }
 
-  function removeNestedContexts(block) {
-    for (const modified of [...modifiedBlocks]) {
-      if (modified !== block && block.contains(modified)) {
-        restoreBlock(modified);
-      }
-    }
-
-    const ancestor = block.parentElement?.closest?.(`.${RTL_CLASS}`);
-    if (ancestor && originalBlockState.has(ancestor)) {
-      restoreBlock(ancestor);
-    }
-  }
-
-  function applyBlockDirection(block) {
-    removeNestedContexts(block);
-
-    if (!originalBlockState.has(block)) {
-      originalBlockState.set(block, {
-        hadDir: block.hasAttribute("dir"),
-        dir: block.getAttribute("dir"),
-        addedClass: !block.classList.contains(RTL_CLASS)
-      });
-    }
-
-    block.classList.add(RTL_CLASS);
-    block.setAttribute("dir", "rtl");
-    modifiedBlocks.add(block);
-  }
-
-  function normalizeConflictingDescendants(block) {
-    const descendants = block.querySelectorAll("span,a,strong,em,b,i,[dir]");
-
-    for (const descendant of descendants) {
-      if (descendant.hasAttribute(GENERATED_ATTRIBUTE)) {
-        continue;
-      }
-
-      const containsRtl = detector.containsRtlText(descendant.textContent || "");
-      if (!containsRtl) {
-        restoreConflict(descendant);
-        continue;
-      }
-
-      if (conflictResets.has(descendant)) {
-        continue;
-      }
-
-      const computed = getComputedStyle(descendant);
-      const explicitLtr = descendant.getAttribute("dir")?.toLowerCase() === "ltr";
-      const isolatedLtr = computed.direction === "ltr" && (
-        computed.unicodeBidi !== "normal" ||
-        computed.display === "inline-block" ||
-        computed.display === "inline-flex"
-      );
-
-      if (explicitLtr || isolatedLtr) {
-        descendant.classList.add(CONFLICT_CLASS);
-        conflictResets.add(descendant);
-      }
-    }
-  }
-
-  function wrapLtrRunsInTextNode(textNode) {
-    const runs = detector.findLtrRuns(textNode.data);
-    if (runs.length === 0) {
-      return;
-    }
-
-    const document = textNode.ownerDocument;
-    const fragment = document.createDocumentFragment();
-    let offset = 0;
-
-    for (const run of runs) {
-      if (run.start > offset) {
-        fragment.append(document.createTextNode(textNode.data.slice(offset, run.start)));
-      }
-
-      const isolate = document.createElement("bdi");
-      isolate.className = "ado-ltr-isolate";
-      isolate.setAttribute("dir", "ltr");
-      isolate.setAttribute(GENERATED_ATTRIBUTE, "true");
-      isolate.textContent = run.text;
-      fragment.append(isolate);
-      generatedIsolates.add(isolate);
-      offset = run.end;
-    }
-
-    if (offset < textNode.data.length) {
-      fragment.append(document.createTextNode(textNode.data.slice(offset)));
-    }
-
-    textNode.replaceWith(fragment);
-  }
-
-  function siblingNodeKind(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      if (!node.data.trim()) {
-        return "space";
-      }
-    } else if (
-      node.nodeType !== Node.ELEMENT_NODE ||
-      !node.matches("span,strong,em,b,i,a,small,mark") ||
-      node.hasAttribute(GENERATED_ATTRIBUTE)
-    ) {
-      return "other";
-    }
-
-    const text = node.textContent || "";
-    if (!text.trim() || detector.containsRtlText(text)) {
-      return text.trim() ? "other" : "space";
-    }
-
-    const runs = detector.findLtrRuns(text);
-    if (runs.length !== 1) {
-      return "other";
-    }
-
-    return text.slice(0, runs[0].start).trim() === "" && text.slice(runs[0].end).trim() === ""
-      ? "ltr"
-      : "other";
-  }
-
-  function wrapOneSiblingLtrPhrase(container) {
-    const children = [...container.childNodes];
-
-    for (let start = 0; start < children.length; start += 1) {
-      if (siblingNodeKind(children[start]) !== "ltr") {
-        continue;
-      }
-
-      let carrierCount = 1;
-      let lastCarrier = start;
-      let cursor = start + 1;
-
-      while (cursor < children.length) {
-        const kind = siblingNodeKind(children[cursor]);
-        if (kind === "space") {
-          cursor += 1;
-          continue;
-        }
-        if (kind !== "ltr") {
-          break;
-        }
-        carrierCount += 1;
-        lastCarrier = cursor;
-        cursor += 1;
-      }
-
-      if (carrierCount < 2) {
-        start = cursor - 1;
-        continue;
-      }
-
-      const document = container.ownerDocument;
-      const isolate = document.createElement("bdi");
-      isolate.className = "ado-ltr-isolate";
-      isolate.setAttribute("dir", "ltr");
-      isolate.setAttribute(GENERATED_ATTRIBUTE, "true");
-      container.insertBefore(isolate, children[start]);
-
-      for (const node of children.slice(start, lastCarrier + 1)) {
-        isolate.append(node);
-      }
-
-      generatedIsolates.add(isolate);
-      return true;
-    }
-
-    return false;
-  }
-
-  function wrapSiblingLtrPhrases(block) {
-    const containers = [block, ...block.querySelectorAll("span,strong,em,b,i,a,small,mark")];
-    for (const container of containers) {
-      if (container.closest(`[${GENERATED_ATTRIBUTE}='true']`)) {
-        continue;
-      }
-      while (wrapOneSiblingLtrPhrase(container)) {
-        // Re-read childNodes after each group is moved into its generated BDI.
-      }
-    }
-  }
-
-  function enhanceReadOnlyBlock(block) {
-    const beforeText = block.textContent || "";
-    wrapSiblingLtrPhrases(block);
-    const textNodes = [];
-    const walker = block.ownerDocument.createTreeWalker(block, NodeFilter.SHOW_TEXT);
-    let textNode = walker.nextNode();
-
-    while (textNode) {
-      const parent = textNode.parentElement;
-      if (
-        parent &&
-        !parent.closest(`[${GENERATED_ATTRIBUTE}='true']`) &&
-        !parent.closest(selectors.ignored) &&
-        !parent.closest(selectors.editable)
-      ) {
-        textNodes.push(textNode);
-      }
-      textNode = walker.nextNode();
-    }
-
-    for (const node of textNodes) {
-      wrapLtrRunsInTextNode(node);
-    }
-
-    if ((block.textContent || "") !== beforeText) {
-      unwrapIsolatesWithin(block);
-      debug("textContent invariant failed; generated isolates were reverted", block);
-    }
-  }
-
-  function processBlock(block) {
+  function processTextBlock(block) {
     if (!block?.isConnected) {
       return;
     }
 
-    if (!detector.shouldUseRtlParagraph(textFor(block))) {
+    const text = meaningfulText(block);
+    if (text && detector.shouldUseRtlParagraph(text)) {
+      applyBlock(block);
+      debugRoosterContext(block);
+    } else {
       restoreBlock(block);
-      return;
     }
-
-    applyBlockDirection(block);
-
-    if (!isEditable(block)) {
-      normalizeConflictingDescendants(block);
-      enhanceReadOnlyBlock(block);
-    }
-
-    inspectBidiBlock(block);
   }
 
   function addTextNodeBlock(textNode, blocks) {
     const existingBlock = textNode.parentElement?.closest?.(`.${RTL_CLASS}`);
-    if (existingBlock && originalBlockState.has(existingBlock)) {
+    if (existingBlock && modifiedBlocks.has(existingBlock)) {
       blocks.add(existingBlock);
     }
 
@@ -411,23 +158,20 @@
     }
 
     if (isElement(root)) {
-      const ancestor = root.closest(`.${RTL_CLASS}`);
-      if (ancestor && originalBlockState.has(ancestor)) {
-        blocks.add(ancestor);
-      }
-      if (root.matches(`.${RTL_CLASS}`) && originalBlockState.has(root)) {
-        blocks.add(root);
+      const existingAncestor = root.closest(`.${RTL_CLASS}`);
+      if (existingAncestor && modifiedBlocks.has(existingAncestor)) {
+        blocks.add(existingAncestor);
       }
     }
 
     for (const existing of root.querySelectorAll?.(`.${RTL_CLASS}`) || []) {
-      if (originalBlockState.has(existing)) {
+      if (modifiedBlocks.has(existing)) {
         blocks.add(existing);
       }
     }
 
     const walker = (root.ownerDocument || document).createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    let textNode = root.nodeType === Node.TEXT_NODE ? root : walker.nextNode();
+    let textNode = walker.nextNode();
     while (textNode) {
       addTextNodeBlock(textNode, blocks);
       textNode = walker.nextNode();
@@ -438,8 +182,16 @@
       editables.push(root);
     }
     editables.push(...(root.querySelectorAll?.(selectors.editable) || []));
+
     for (const editable of editables) {
-      if (detector.containsRtlText(textFor(editable))) {
+      // Rooster contenteditable roots are containers, including in view mode.
+      // Their actual child line blocks are discovered through text nodes.
+      if (isRoosterEditor(editable)) {
+        continue;
+      }
+
+      const text = meaningfulText(editable);
+      if (detector.containsRtlText(text) || modifiedBlocks.has(editable)) {
         blocks.add(editable);
       }
     }
@@ -462,7 +214,7 @@
         processed < MAX_BLOCKS_PER_SLICE &&
         (!deadline || deadline.timeRemaining() > 1)
       ) {
-        processBlock(blocks[index]);
+        processTextBlock(blocks[index]);
         index += 1;
         processed += 1;
       }
@@ -473,6 +225,18 @@
     }
 
     processSlice();
+  }
+
+  function processRoosterEditor(editor) {
+    if (!enabled || !editor?.isConnected) {
+      return;
+    }
+
+    if (DEBUG) {
+      debugDirection(editor);
+    }
+
+    processRoot(editor);
   }
 
   function scheduleIdle(callback) {
@@ -509,7 +273,6 @@
       if (!root || (isElement(root) && !root.isConnected)) {
         continue;
       }
-
       if (roots.some((other) => other !== root && other?.contains?.(root))) {
         continue;
       }
@@ -523,18 +286,11 @@
         restoreBlock(block);
       }
     }
-
-    for (const isolate of [...generatedIsolates]) {
-      if (node === isolate || node?.contains?.(isolate)) {
-        generatedIsolates.delete(isolate);
-      }
-    }
   }
 
   function onMutations(mutations) {
     for (const mutation of mutations) {
-      enqueue(mutation.type === "characterData" ? mutation.target : mutation.target);
-
+      enqueue(mutation.target);
       for (const node of mutation.addedNodes || []) {
         enqueue(node);
       }
@@ -544,14 +300,33 @@
     }
   }
 
+  function scheduleRoosterInput(editor) {
+    const existingTimer = roosterInputTimers.get(editor);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    const timer = setTimeout(() => {
+      roosterInputTimers.delete(editor);
+      processRoosterEditor(editor);
+    }, ROOSTER_INPUT_DELAY_MS);
+    roosterInputTimers.set(editor, timer);
+  }
+
   function onInput(event) {
     if (!enabled || !isElement(event.target)) {
       return;
     }
 
+    const roosterEditor = event.target.closest(selectors.roosterEditor);
+    if (roosterEditor) {
+      scheduleRoosterInput(roosterEditor);
+      return;
+    }
+
     const editable = event.target.closest(selectors.editable);
     if (editable) {
-      processBlock(editable);
+      processTextBlock(editable);
     }
   }
 
@@ -570,7 +345,6 @@
     });
     document.addEventListener("input", onInput, true);
     document.addEventListener("change", onInput, true);
-    debug("enabled");
   }
 
   function stop() {
@@ -582,16 +356,14 @@
     pendingRoots.clear();
     flushScheduled = false;
 
+    for (const timer of roosterInputTimers.values()) {
+      clearTimeout(timer);
+    }
+    roosterInputTimers.clear();
+
     for (const block of [...modifiedBlocks]) {
       restoreBlock(block);
     }
-    for (const isolate of [...generatedIsolates]) {
-      unwrapIsolate(isolate);
-    }
-    for (const conflict of [...conflictResets]) {
-      restoreConflict(conflict);
-    }
-    debug("disabled");
   }
 
   function setEnabled(nextEnabled) {

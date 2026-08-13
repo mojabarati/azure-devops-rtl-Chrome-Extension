@@ -1,24 +1,4 @@
-.ado-rtl-block {
+.ado-rtl-text-block {
   direction: rtl !important;
   text-align: right !important;
-  unicode-bidi: isolate !important;
-}
-
-.ado-rtl-block .ado-rtl-conflict-reset {
-  direction: inherit !important;
-  unicode-bidi: normal !important;
-}
-
-.ado-rtl-block .ado-ltr-isolate {
-  direction: ltr !important;
-  unicode-bidi: isolate !important;
-}
-
-input.ado-rtl-block,
-textarea.ado-rtl-block,
-[contenteditable="true"].ado-rtl-block,
-[role="textbox"].ado-rtl-block {
-  direction: rtl !important;
-  text-align: right !important;
-  unicode-bidi: isolate !important;
 }

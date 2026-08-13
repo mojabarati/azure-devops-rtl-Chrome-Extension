@@ -67,10 +67,34 @@
     );
   }
 
+  function findRoosterTextBlock(textNode, editor) {
+    let current = textNode?.parentElement;
+
+    while (current && current !== editor) {
+      if (
+        current.matches(LOGICAL_BLOCK_SELECTOR) ||
+        (current.matches("div") && !current.querySelector("img,video,iframe,canvas,svg"))
+      ) {
+        return current;
+      }
+      current = current.parentElement;
+    }
+
+    return null;
+  }
+
   function findLogicalTextBlock(textNode, selectors) {
     const parent = textNode?.parentElement;
     if (!parent || isIgnored(parent, selectors)) {
       return null;
+    }
+
+    // Rooster uses contenteditable=true even in view mode. Its direct/nested
+    // line DIVs own Azure's inline direction and must be processed instead of
+    // treating the whole editor as one editable paragraph.
+    const roosterEditor = parent.closest(selectors.roosterEditor);
+    if (roosterEditor) {
+      return findRoosterTextBlock(textNode, roosterEditor);
     }
 
     const editable = parent.closest(selectors.editable);
@@ -96,6 +120,7 @@
 
   return Object.freeze({
     findLogicalTextBlock,
+    findRoosterTextBlock,
     isLeafTextDiv,
     LOGICAL_BLOCK_SELECTOR
   });

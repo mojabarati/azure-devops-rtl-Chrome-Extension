@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Azure DevOps RTL Fixer",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Improves Persian and Arabic mixed-direction text rendering in Azure DevOps without changing content.",
   "permissions": [
     "storage"

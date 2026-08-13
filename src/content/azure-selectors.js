@@ -5,6 +5,7 @@
   // changing the generic DOM processor. Generic semantic elements remain the
   // primary path; these hints cover common work-item fields and rich editors.
   root.AdoRtlSelectors = Object.freeze({
+    roosterEditor: ".lean-rooster.rooster-editor",
     semanticText: [
       "p",
       "li",
@@ -61,7 +62,7 @@
       "button",
       "[role='button']",
       "[aria-hidden='true']",
-      "[data-ado-rtl-generated='true']",
+      ".rooster-command-bar",
       ".monaco-editor"
     ].join(",")
   });
