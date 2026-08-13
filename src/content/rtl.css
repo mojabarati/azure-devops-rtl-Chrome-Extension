@@ -1,13 +1,23 @@
-.ado-rtl-fixer {
+.ado-rtl-block {
   direction: rtl !important;
   text-align: right !important;
   unicode-bidi: isolate !important;
 }
 
-input.ado-rtl-fixer,
-textarea.ado-rtl-fixer,
-[contenteditable="true"].ado-rtl-fixer,
-[role="textbox"].ado-rtl-fixer {
+.ado-rtl-block .ado-rtl-conflict-reset {
+  direction: inherit !important;
+  unicode-bidi: normal !important;
+}
+
+.ado-rtl-block .ado-ltr-isolate {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+}
+
+input.ado-rtl-block,
+textarea.ado-rtl-block,
+[contenteditable="true"].ado-rtl-block,
+[role="textbox"].ado-rtl-block {
   direction: rtl !important;
   text-align: right !important;
   unicode-bidi: isolate !important;

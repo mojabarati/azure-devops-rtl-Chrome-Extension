@@ -61,6 +61,7 @@
       "button",
       "[role='button']",
       "[aria-hidden='true']",
+      "[data-ado-rtl-generated='true']",
       ".monaco-editor"
     ].join(",")
   });

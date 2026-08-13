@@ -2,7 +2,7 @@
 
 A small, privacy-first Chrome extension that makes Persian and Arabic text easier to read inside Azure DevOps. It fixes visual direction and alignment while leaving work-item content exactly as stored.
 
-Version: **v0.1.0**
+Version: **v0.1.1**
 
 ## The problem
 
@@ -25,7 +25,9 @@ Before/after screenshots can be added at:
 - Supports mixed Persian/English paragraphs without reversing or rewriting strings.
 - Supports text inputs, textareas, `contenteditable`, and ARIA textboxes while typing.
 - Observes scoped DOM additions for Azure DevOps SPA navigation and lazy-loaded comments.
-- Applies a narrowly scoped CSS class and `dir="rtl"` only to detected text containers.
+- Resolves RTL text nodes to one logical paragraph/block; ordinary inline spans never become nested RTL roots.
+- Isolates complete English technical runs with generated, reversible `<bdi dir="ltr">` wrappers in read-only content.
+- Detects and narrowly neutralizes conflicting LTR/isolate styles on Persian-containing descendants.
 - Restores only the class and attribute changes made by this extension when disabled.
 - Leaves English, numeric-only text, standalone URLs, email addresses, GUIDs, and code areas alone.
 - Runs entirely in the browser with no analytics, network requests, or remote code.
@@ -35,7 +37,7 @@ Before/after screenshots can be added at:
 - `https://dev.azure.com/*`
 - `https://*.visualstudio.com/*`
 
-Self-hosted Azure DevOps Server domains are not included in v0.1.0. They can be added later by extending the manifest match patterns.
+Self-hosted Azure DevOps Server domains are not included in v0.1.1. They can be added later by extending the manifest match patterns.
 
 ## Install locally
 
@@ -58,33 +60,39 @@ On unsupported pages the popup says: “Open an Azure DevOps page to use RTL Fix
 
 ### Direction detection
 
-`src/content/rtl-detector.js` recognizes the Arabic Unicode blocks that include Persian-specific characters such as `پ`, `چ`, `ژ`, `گ`, `ک`, and `ی`. A paragraph containing any relevant character is classified as RTL. English-only text is classified as LTR; empty, numeric-only, URL, email, and GUID values are neutral.
+`src/content/rtl-detector.js` recognizes strong Arabic-script letters, including Persian-specific characters such as `پ`, `چ`, `ژ`, `گ`, `ک`, and `ی`. It separately counts strong RTL/LTR letters and word runs; punctuation, whitespace, and numbers do not vote on direction. A paragraph is RTL when Persian is dominant by character or grammatical word structure, so a sentence can begin with `Feature Flag` and still receive the intended RTL base. English-only text remains LTR; empty, numeric-only, URL, email, and GUID values are neutral.
 
 ### Mixed-language BiDi rendering
 
 Detected containers receive:
 
 ```css
-.ado-rtl-fixer {
+.ado-rtl-block {
   direction: rtl;
   text-align: right;
   unicode-bidi: isolate;
 }
 ```
 
-`direction: rtl` gives the complete paragraph the intended base direction, including sentences that start with an English term such as `API`. `unicode-bidi: isolate` keeps the paragraph's bidirectional ordering from affecting neighboring Azure DevOps UI. Native browser BiDi handling preserves embedded English runs in LTR order.
+`direction: rtl` gives one logical paragraph the intended base direction. `unicode-bidi: isolate` prevents that paragraph from affecting neighboring Azure DevOps UI. In read-only fields, a small scanner groups technical runs such as `ai specialist`, `REST API`, `API v2`, `Node.js`, `feature-flag`, `GET /api/users`, `C#`, and `.NET`, then places each complete phrase inside a generated `<bdi dir="ltr">`. Phrases split across adjacent inline spans are grouped into one isolate where it is safe to preserve their order.
+
+Every generated element carries `data-ado-rtl-generated="true"`. Before and after wrapping, the processor checks that the block's exact `textContent` is unchanged.
 
 The extension intentionally does not use string reversal, `innerHTML`, text-node replacement, or inserted directional characters.
 
 ### DOM safety and SPA updates
 
-The content script performs one initial scan when enabled. A single `MutationObserver` then queues only added or edited subtrees. Work is deduplicated, split into bounded batches, and scheduled during idle time where available. Captured `input` and `change` events update editable fields without polling.
+The content script performs one initial text-node walk when enabled. For each RTL text node, `findLogicalTextBlock()` selects the nearest semantic paragraph (`p`, `li`, `blockquote`, table cell, heading, and similar) or a leaf-like text `div`. A `Set` deduplicates those roots. Parent panels and inline elements such as `span`, `strong`, `em`, and `a` are never chosen merely because their `textContent` includes Persian.
 
-Generic `div` and `span` processing is limited to leaf-like text containers. Script, style, code, preformatted text, buttons, SVG, canvas, hidden content, and Monaco editors are excluded. Azure-specific selector hints are isolated in `src/content/azure-selectors.js`.
+A single `MutationObserver` queues only added or edited subtrees. Work is deduplicated, split into bounded batches, and scheduled during idle time where available. Captured `input` and `change` events update editable roots without polling.
+
+Script, style, code, preformatted text, buttons, SVG, canvas, hidden content, and Monaco editors are excluded. A confirmed read-only RTL block may receive generated LTR isolates. Inputs, textareas, `contenteditable`, ARIA textboxes, and rich-text editor roots receive direction only: the extension never splits or wraps their text nodes, protecting caret, selection, undo history, and framework state.
+
+For Azure descendants that contain Persian but already compute to an isolated LTR context, the extension adds a tracked reset class inside that confirmed block. It does not delete Azure-owned `dir`, style, or class values.
 
 ### Disable behavior
 
-Before changing an element, the extension records whether it already had a `dir` attribute and its exact value. Disabling restores that value (or removes the extension-added attribute) and removes only the CSS class added by the extension.
+Before changing a block, the extension records whether it already had a `dir` attribute and its exact value. Disabling unwraps only generated `<bdi>` nodes, removes generated/reset classes, restores original direction attributes, and preserves exact text without reloading the page.
 
 ## Architecture
 
@@ -96,6 +104,7 @@ azure-devops-rtl-fixer/
 │   ├── content/
 │   │   ├── azure-selectors.js
 │   │   ├── content.js
+│   │   ├── dom-utils.js
 │   │   ├── rtl-detector.js
 │   │   └── rtl.css
 │   └── popup/
@@ -105,6 +114,9 @@ azure-devops-rtl-fixer/
 ├── icons/
 ├── scripts/generate-icons.js
 └── tests/
+    ├── fixtures/nested-azure-devops.html
+    ├── manifest.test.js
+    └── rtl-detector.test.js
 ```
 
 The service worker initializes the default disabled setting. The popup reads and updates it. The content script owns detection, observation, and reversible visual changes.
@@ -136,7 +148,7 @@ Regenerate the checked-in PNG icons after changing the icon generator:
 npm run icons
 ```
 
-To debug DOM behavior locally, set `DEBUG` to `true` near the top of `src/content/content.js`. It is `false` by default.
+To debug DOM behavior locally, set `DEBUG` to `true` near the top of `src/content/content.js`. It is `false` by default. The content script logs the logical block plus relevant ancestors/direct children, including tag, class, `dir`, computed direction, `unicode-bidi`, and display. In the extension execution context, `AdoRtlFixerDebug.inspect(element)` performs the same inspection on demand.
 
 ## Testing checklist
 
@@ -152,11 +164,19 @@ After loading unpacked, verify these cases in a non-production test work item:
 
 Automated tests cover Unicode detection, mixed-language examples, neutral technical values, permission scope, URL matches, and manifest file references.
 
+The browser regression fixture represents a nested Azure DevOps rich-text DOM and checks logical-block selection, complete English phrase isolation, dynamic insertion, conflicting child direction, editable safety, exact `textContent`, and disable restoration:
+
+```bash
+python -m http.server 8765
+```
+
+Then open `http://127.0.0.1:8765/tests/fixtures/nested-azure-devops.html`. Its title and assertions report PASS/FAIL. Add `?hold=1` to keep the enhanced DOM in place for visual inspection.
+
 ## Known limitations
 
 - Azure DevOps can change its markup. Generic semantic detection reduces this dependency, while Azure-specific hints are kept in one file for maintenance.
-- Text rendered inside cross-origin iframes or a shadow root is not processed in v0.1.0.
-- The extension sets paragraph-level direction. It does not add explicit isolation around individual English phrases; native browser BiDi handles normal technical terms, but unusually complex punctuation may still depend on how the text was authored.
+- Text rendered inside cross-origin iframes or a shadow root is not processed in v0.1.1.
+- Deeply fragmented English phrases with intervening non-inline widgets are left to native BiDi handling; the extension does not move interactive controls to manufacture a phrase wrapper.
 - Self-hosted Azure DevOps Server domains require an explicit manifest match pattern before use.
 
 ## Contributing

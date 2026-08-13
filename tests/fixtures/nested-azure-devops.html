@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Azure DevOps RTL Fixer BiDi Regression Fixture</title>
+    <link rel="stylesheet" href="../../src/content/rtl.css">
+    <style>
+      body { max-width: 900px; margin: 2rem auto; font: 16px/1.8 "Segoe UI", sans-serif; }
+      .work-item-form { border: 1px solid #ccc; padding: 1rem; }
+      .azure-ltr-isolate { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+      .pass { color: #087443; }
+      .fail { color: #b42318; }
+    </style>
+  </head>
+  <body>
+    <h1>Nested Azure DevOps BiDi regression fixture</h1>
+    <div class="work-item-form">
+      <div class="description-container">
+        <div class="rich-text">
+          <p id="case1">
+            <span>در صورتی که </span><span>ai specialist</span><span class="azure-ltr-isolate" dir="ltr"> پورتفولیوی خود را غیرفعال کرد بنر جهت </span><span>Activation</span><span> نمایش داده شود.</span>
+          </p>
+          <p id="case2">برای این Feature یک API جدید ایجاد شود.</p>
+          <p id="case3">در Backend از REST API برای دریافت User Profile استفاده شود.</p>
+          <p id="case4">Feature Flag برای این قابلیت اضافه شود.</p>
+          <p id="case5">Create a new API for this feature.</p>
+          <div id="editor" contenteditable="true">برای این Feature یک API جدید ایجاد شود.</div>
+        </div>
+      </div>
+    </div>
+    <ol id="results"></ol>
+    <h2>Captured DOM</h2>
+    <pre id="dom-output"></pre>
+
+    <script>
+      const case1 = document.querySelector("#case1");
+      const originalText = case1.textContent;
+      const originalHtml = case1.innerHTML;
+      let messageListener;
+      window.chrome = {
+        runtime: { onMessage: { addListener(listener) { messageListener = listener; } } },
+        storage: {
+          onChanged: { addListener() {} },
+          local: { get(_defaults, callback) { callback({ rtlFixEnabled: true }); } }
+        }
+      };
+    </script>
+    <script src="../../src/content/rtl-detector.js"></script>
+    <script src="../../src/content/azure-selectors.js"></script>
+    <script src="../../src/content/dom-utils.js"></script>
+    <script src="../../src/content/content.js"></script>
+    <script>
+      function assertion(name, passed, detail = "") {
+        const item = document.createElement("li");
+        item.className = passed ? "pass" : "fail";
+        item.textContent = `${passed ? "PASS" : "FAIL"}: ${name}${detail ? ` — ${detail}` : ""}`;
+        document.querySelector("#results").append(item);
+        return { name, passed, detail };
+      }
+
+      async function runFixture() {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+
+        const dynamicOuter = document.createElement("div");
+        dynamicOuter.id = "dynamic-outer";
+        dynamicOuter.innerHTML = '<div><p id="dynamic-case"><span>در </span><span>ai</span><span> specialist</span><span> از </span><span>REST API</span><span> استفاده شود.</span></p></div>';
+        document.querySelector(".work-item-form").append(dynamicOuter);
+        await new Promise((resolve) => setTimeout(resolve, 250));
+
+        const blocks = [...document.querySelectorAll(".ado-rtl-block")];
+        const case1Isolates = [...case1.querySelectorAll("bdi[data-ado-rtl-generated='true']")].map((node) => node.textContent);
+        const beforeDisable = [
+          assertion("only logical blocks receive RTL", blocks.every((node) => !["SPAN", "A", "STRONG", "EM"].includes(node.tagName))),
+          assertion("case 1 paragraph is the RTL root", case1.matches("p.ado-rtl-block[dir='rtl']")),
+          assertion("case 1 has one RTL context", case1.querySelectorAll(".ado-rtl-block").length === 0),
+          assertion("ai specialist is one LTR isolate", case1Isolates.includes("ai specialist")),
+          assertion("Activation remains isolated", case1Isolates.includes("Activation")),
+          assertion("textContent is exactly preserved", case1.textContent === originalText),
+          assertion("Azure LTR conflict is narrowly reset", Boolean(case1.querySelector(".azure-ltr-isolate.ado-rtl-conflict-reset"))),
+          assertion("English-only paragraph is unchanged", !document.querySelector("#case5").classList.contains("ado-rtl-block")),
+          assertion("contenteditable gets direction only", document.querySelector("#editor").classList.contains("ado-rtl-block") && !document.querySelector("#editor bdi")),
+          assertion("dynamic paragraph is selected, not its ancestors or spans", document.querySelector("#dynamic-case").classList.contains("ado-rtl-block") && !document.querySelector("#dynamic-outer").classList.contains("ado-rtl-block") && !document.querySelector("#dynamic-case span.ado-rtl-block")),
+          assertion("an English phrase split across sibling spans uses one isolate", [...document.querySelectorAll("#dynamic-case > bdi")].some((node) => node.textContent === "ai specialist"))
+        ];
+
+        const afterHtml = case1.innerHTML;
+        if (new URLSearchParams(location.search).has("hold")) {
+          window.fixtureResults = {
+            passed: beforeDisable.every((result) => result.passed),
+            assertions: beforeDisable,
+            originalText,
+            originalHtml,
+            enhancedHtml: afterHtml
+          };
+          document.querySelector("#dom-output").textContent = JSON.stringify(window.fixtureResults, null, 2);
+          window.fixtureReady = true;
+          document.title = window.fixtureResults.passed ? "PASS — Enhanced RTL DOM" : "FAIL — Enhanced RTL DOM";
+          return;
+        }
+
+        messageListener({ type: "ADO_RTL_SET_ENABLED", enabled: false }, null, () => {});
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const afterDisable = [
+          assertion("disable removes generated BDI nodes", !document.querySelector("bdi[data-ado-rtl-generated='true']")),
+          assertion("disable removes RTL block classes", !document.querySelector(".ado-rtl-block")),
+          assertion("disable restores original dir attribute", !case1.hasAttribute("dir")),
+          assertion("disable preserves exact text", case1.textContent === originalText),
+          assertion("disable restores Azure child dir", case1.querySelector(".azure-ltr-isolate").getAttribute("dir") === "ltr")
+        ];
+
+        window.fixtureResults = {
+          passed: [...beforeDisable, ...afterDisable].every((result) => result.passed),
+          assertions: [...beforeDisable, ...afterDisable],
+          originalText,
+          originalHtml,
+          enhancedHtml: afterHtml,
+          restoredHtml: case1.innerHTML
+        };
+        document.querySelector("#dom-output").textContent = JSON.stringify(window.fixtureResults, null, 2);
+        window.fixtureReady = true;
+        document.title = window.fixtureResults.passed ? "PASS — Azure DevOps RTL Fixer" : "FAIL — Azure DevOps RTL Fixer";
+      }
+
+      runFixture();
+    </script>
+  </body>
+</html>
