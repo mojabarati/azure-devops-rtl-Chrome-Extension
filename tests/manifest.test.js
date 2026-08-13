@@ -106,4 +106,7 @@ test("real Rooster browser regression fixture is included", () => {
   assert.match(fixture, /id="persian-block" style="direction:ltr"/u);
   assert.match(fixture, /const onBlock = snapshot\(persianBlock\)/u);
   assert.match(fixture, /onBlock\.computedDirection === "rtl"/u);
+  assert.match(fixture, /id="ordered-mixed"/u);
+  assert.match(fixture, /id="unordered-mixed"/u);
+  assert.match(fixture, /getComputedStyle\(orderedMixed, "::marker"\)\.direction === "rtl"/u);
 });
