@@ -17,7 +17,7 @@
   const RTL_CHARACTER_PATTERN = /[\u0600-\u06ff\u0750-\u077f\u0870-\u089f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]|[\u{1ee00}-\u{1eeff}]/u;
   const LATIN_CHARACTER_PATTERN = /\p{Script=Latin}/u;
   const LETTER_PATTERN = /\p{L}/u;
-  const MARK_OR_CONNECTOR_PATTERN = /[\p{M}\p{N}._#@+:/\\-]/u;
+  const MARK_OR_CONNECTOR_PATTERN = /[\p{M}\p{N}._#@+:/\\\-\u200c\u200d]/u;
   const ONLY_NUMBERS_AND_PUNCTUATION_PATTERN = /^[\s\d۰-۹٠-٩.,،٫٬:;؛!?؟+\-−–—_()[\]{}%٪/\\|#@&*'"`~]+$/u;
   const URL_PATTERN = /^(?:(?:https?|ftp):\/\/|www\.)\S+$/iu;
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
@@ -55,6 +55,23 @@
     }
 
     return counts;
+  }
+
+  function containsMeaningfulRtlWord(text) {
+    let rtlRunLength = 0;
+
+    for (const character of normalizeText(text)) {
+      if (isRtlStrongCharacter(character)) {
+        rtlRunLength += 1;
+        if (rtlRunLength >= 2) {
+          return true;
+        }
+      } else if (!MARK_OR_CONNECTOR_PATTERN.test(character)) {
+        rtlRunLength = 0;
+      }
+    }
+
+    return false;
   }
 
   function isRtlStrongCharacter(character) {
@@ -96,6 +113,13 @@
       return true;
     }
 
+    // A real Persian/Arabic word makes the surrounding block RTL even when a
+    // long English label appears first. Requiring two connected RTL letters
+    // avoids flipping English prose because of one isolated script character.
+    if (containsMeaningfulRtlWord(normalized)) {
+      return true;
+    }
+
     // Character count handles ordinary Persian prose. Word count prevents a
     // paragraph rich in long English technical identifiers from being
     // misclassified when the surrounding grammatical structure is Persian.
@@ -122,6 +146,7 @@
 
   return Object.freeze({
     containsRtlText,
+    containsMeaningfulRtlWord,
     countStrongCharacters,
     getTextDirection,
     isStandaloneTechnicalText,
