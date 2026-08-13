@@ -11,6 +11,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Explicit Azure DevOps Rooster line-block support, including inline LTR overrides.
 - Persistent, default-OFF user toggle using `chrome.storage.local`.
 - SPA and dynamically rendered content handling with a batched `MutationObserver`.
+- RTL list-item detection when meaningful Persian/Arabic follows an English prefix, including native ordered/unordered markers.
 - Production icons, popup privacy disclosure, public privacy/security documentation, Store submission metadata, and repeatable release validation.
 
 ### Security and privacy
