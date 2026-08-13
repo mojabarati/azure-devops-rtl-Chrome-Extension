@@ -3,6 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
+  containsMeaningfulRtlWord,
   containsRtlText,
   countStrongCharacters,
   getTextDirection,
@@ -20,10 +21,17 @@ test("detects mixed Persian and English as RTL", () => {
   assert.equal(getTextDirection("برای این Feature یک API جدید ایجاد شود."), "rtl");
 });
 
-test("uses Persian dominance rather than only the first strong character", () => {
+test("uses Persian content rather than only the first strong character", () => {
   assert.equal(shouldUseRtlParagraph("Feature Flag برای این قابلیت اضافه شود."), true);
+  assert.equal(shouldUseRtlParagraph("Portfolio Lifecycle Status برابر Activated است."), true);
   assert.equal(shouldUseRtlParagraph("در Backend از REST API برای دریافت User Profile استفاده شود."), true);
   assert.equal(shouldUseRtlParagraph("Create a new API for this feature."), false);
+});
+
+test("requires meaningful RTL content in an otherwise English sentence", () => {
+  assert.equal(containsMeaningfulRtlWord("Status برابر Activated"), true);
+  assert.equal(containsMeaningfulRtlWord("Set the status to ب."), false);
+  assert.equal(shouldUseRtlParagraph("Set the status to ب."), false);
 });
 
 test("counts only strong letters, not numbers or punctuation", () => {
