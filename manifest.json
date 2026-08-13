@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Azure DevOps RTL Fixer",
+  "version": "0.1.0",
+  "description": "Improves Persian and Arabic mixed-direction text rendering in Azure DevOps without changing content.",
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "action": {
+    "default_title": "Azure DevOps RTL Fixer",
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://dev.azure.com/*",
+        "https://*.visualstudio.com/*"
+      ],
+      "js": [
+        "src/content/rtl-detector.js",
+        "src/content/azure-selectors.js",
+        "src/content/content.js"
+      ],
+      "css": [
+        "src/content/rtl.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
