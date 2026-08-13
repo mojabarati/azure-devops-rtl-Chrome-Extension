@@ -1,11 +1,13 @@
 {
   "name": "azure-devops-rtl-fixer",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "private": true,
   "description": "A lightweight Chrome extension for readable Persian and Arabic text in Azure DevOps.",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/content/rtl-detector.js && node --check src/content/azure-selectors.js && node --check src/content/dom-utils.js && node --check src/content/content.js && node --check src/popup/popup.js && node --check src/background/service-worker.js"
+    "check": "node --check src/content/rtl-detector.js && node --check src/content/azure-selectors.js && node --check src/content/dom-utils.js && node --check src/content/content.js && node --check src/popup/popup.js && node --check src/background/service-worker.js",
+    "package": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package.ps1",
+    "release:check": "node scripts/release-check.js"
   },
   "engines": {
     "node": ">=18"

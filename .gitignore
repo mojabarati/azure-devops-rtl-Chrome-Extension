@@ -1,8 +1,16 @@
 node_modules/
+dist/
 .DS_Store
 Thumbs.db
 *.log
 *.zip
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
 .idea/
 .vscode/
 coverage/

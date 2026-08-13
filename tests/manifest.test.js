@@ -10,12 +10,14 @@ const manifest = JSON.parse(fs.readFileSync(path.join(projectRoot, "manifest.jso
 
 test("uses Manifest V3 and the expected release version", () => {
   assert.equal(manifest.manifest_version, 3);
-  assert.equal(manifest.version, "0.1.2");
+  assert.equal(manifest.version, "1.0.0");
+  assert.ok(manifest.description.length <= 132);
 });
 
 test("requests only storage permission", () => {
   assert.deepEqual(manifest.permissions, ["storage"]);
   assert.equal(manifest.host_permissions, undefined);
+  assert.doesNotMatch(JSON.stringify(manifest), /<all_urls>/u);
 });
 
 test("content scripts only match supported Azure DevOps cloud hosts", () => {
@@ -53,6 +55,19 @@ test("uses the supplied Azure RTL logo at every Chrome icon size", () => {
 
   const popup = fs.readFileSync(path.join(projectRoot, manifest.action.default_popup), "utf8");
   assert.match(popup, /\.\.\/\.\.\/icons\/icon48\.png/u);
+  assert.match(popup, /analyzed locally for RTL formatting/u);
+});
+
+test("stores only a default-off local preference", () => {
+  const sources = [
+    "src/background/service-worker.js",
+    "src/content/content.js",
+    "src/popup/popup.js"
+  ].map((file) => fs.readFileSync(path.join(projectRoot, file), "utf8")).join("\n");
+
+  assert.doesNotMatch(sources, /chrome\.storage\.sync/u);
+  assert.match(sources, /rtlFixEnabled/u);
+  assert.match(sources, /\[STORAGE_KEY\]: false/u);
 });
 
 test("content processing avoids destructive or continuously polling APIs", () => {
