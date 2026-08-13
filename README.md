@@ -2,7 +2,7 @@
   <img src="icons/icon128.png" width="128" height="128" alt="Azure DevOps RTL Fixer logo">
 </p>
 
-<h1 align="center">Azure DevOps RTL Fixer</h1>
+<h1 align="center">Azure DevOps RTL Chrome Extension</h1>
 
 <p align="center">
   <strong>Readable Persian and Arabic content inside Azure DevOps.</strong>
