@@ -68,6 +68,11 @@
   }
 
   function findRoosterTextBlock(textNode, editor) {
+    const listItem = textNode?.parentElement?.closest?.("li");
+    if (listItem && editor?.contains?.(listItem)) {
+      return listItem;
+    }
+
     let current = textNode?.parentElement;
 
     while (current && current !== editor) {
@@ -87,6 +92,13 @@
     const parent = textNode?.parentElement;
     if (!parent || isIgnored(parent, selectors)) {
       return null;
+    }
+
+    // The LI owns the native list marker. Target it instead of a nested span,
+    // paragraph, or Rooster line DIV so direction moves both text and marker.
+    const listItem = parent.closest("li");
+    if (listItem && !isIgnored(listItem, selectors)) {
+      return listItem;
     }
 
     // Rooster uses contenteditable=true even in view mode. Its direct/nested
