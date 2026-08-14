@@ -34,7 +34,8 @@ Azure DevOps uses a left-to-right interface, which can make Persian and Arabic w
 - 🧩 Supports Azure DevOps Rooster rich-text content, including inline LTR overrides.
 - ⚡ Handles dynamically rendered SPA content without continuous polling.
 - 🎚️ Provides a persistent ON/OFF toggle that defaults to OFF.
-- 🔒 Processes page content locally with no analytics, telemetry, or outbound transmission.
+- 🐞 Opens a pre-filled Gmail draft from the popup when the user chooses **Report an issue**.
+- 🔒 Processes Azure DevOps page content locally with no analytics, telemetry, or automatic transmission.
 - ↩️ Removes only extension-added presentation changes when disabled.
 
 ## 🔄 Before & After
@@ -120,13 +121,15 @@ src/
 
 ## 🔒 Privacy & Permissions
 
-All direction detection happens locally in the browser. Page content is not persisted or transmitted to the developer or third parties. The only stored value is the Boolean `rtlFixEnabled` preference in `chrome.storage.local`.
+All direction detection happens locally in the browser. The RTL feature does not persist or transmit page content to the developer or third parties. The only stored value is the Boolean `rtlFixEnabled` preference in `chrome.storage.local`.
+
+Choosing **Report an issue** opens Gmail in a new tab with only a static report template and the extension version pre-filled. No Azure DevOps page text, URL, organization, project, or work-item data is added automatically, and the user decides whether to edit, send, or discard the draft.
 
 The manifest requests one Chrome API permission:
 
 - `storage` — remembers the ON/OFF preference locally.
 
-The extension does not request `tabs`, `activeTab`, `scripting`, `webRequest`, cookies, history, or `<all_urls>` access. It contains no analytics, telemetry, tracking, advertising, profiling, remote code, or network requests.
+The extension does not request `tabs`, `activeTab`, `scripting`, `webRequest`, cookies, history, or `<all_urls>` access. It contains no analytics, telemetry, tracking, advertising, profiling, remote code, or background network requests.
 
 See the [Privacy Policy](PRIVACY.md) and the reviewer-facing [permission explanation](store/PERMISSIONS.md) for full details.
 

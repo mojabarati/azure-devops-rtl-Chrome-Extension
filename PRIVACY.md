@@ -1,6 +1,6 @@
 # Privacy Policy — Azure DevOps RTL Fixer
 
-Last updated: August 13, 2026
+Last updated: August 15, 2026
 
 Azure DevOps RTL Fixer is a browser extension that improves the presentation of Persian/Farsi and other right-to-left text on supported Azure DevOps pages.
 
@@ -31,9 +31,17 @@ No backend service is used.
 
 ## Data transmission and third-party sharing
 
-The extension does not transmit Azure DevOps page content, work-item data, organization or project information, usernames, URLs, authentication information, or extension usage data to the developer or third parties.
+The RTL feature does not transmit Azure DevOps page content, work-item data, organization or project information, usernames, URLs, authentication information, or extension usage data to the developer or third parties.
 
-Azure DevOps content is not shared with third parties. The extension contains no analytics, telemetry, advertising, tracking pixels, or developer-controlled network requests.
+The extension does not automatically share Azure DevOps content with third parties. It contains no analytics, telemetry, advertising, tracking pixels, or developer-controlled network requests.
+
+## Optional issue reports
+
+When the user selects **Report an issue**, the extension opens the Gmail web compose page in a new browser tab. The draft is pre-filled with the developer's email address, a static subject and report template, and the extension version.
+
+The extension does not automatically add the current Azure DevOps URL, page text, organization name, project name, work-item content, selected text, user identity, or browser history. It does not authenticate with Gmail or send the report. The user can review and edit the draft and chooses whether to send or discard it. The developer receives a report only if the user sends the email.
+
+Opening Gmail is an intentional, user-initiated navigation to a third-party service. Gmail's handling of the page and any email the user chooses to send is governed by Google's applicable terms and privacy policy.
 
 ## Data storage
 
@@ -51,7 +59,7 @@ The extension does not use `chrome.storage.sync`.
 
 ## Human access
 
-Because supported page content is processed locally and is not transmitted, the developer and other humans do not receive or read that content through the extension.
+Because supported page content is processed locally and is not transmitted by the RTL feature, the developer and other humans do not receive or read that content through the extension. The developer can receive only information the user intentionally includes in an issue-report email and chooses to send.
 
 ## Limited Use disclosure
 
@@ -61,7 +69,7 @@ The use of information received through browser APIs adheres to the Chrome Web S
 
 ## Security
 
-The extension ships all executable code inside its package and does not load remote code. Since it does not transmit Azure DevOps content, there is no developer-operated transmission or storage channel for that content.
+The extension ships all executable code inside its package and does not load remote code. There is no automatic developer-operated transmission or storage channel for Azure DevOps content. Optional issue reports use a user-initiated Gmail draft and are sent only by the user.
 
 ## Changes to this policy
 
@@ -69,4 +77,4 @@ This policy may be updated when the extension's functionality or applicable publ
 
 ## Contact
 
-No public repository remote or dedicated contact address is configured in this source checkout, so this policy does not invent one. Before Store submission, the publisher must add the public repository or support URL here. Do not include secrets, authentication data, private Azure DevOps URLs, or confidential work-item content in a public report.
+For privacy questions or issue reports, email `mojabarati@gmail.com` or use the public repository at <https://github.com/mojabarati/azure-devops-rtl-Chrome-Extension>. Do not include secrets, authentication data, private Azure DevOps URLs, or confidential work-item content in a report.

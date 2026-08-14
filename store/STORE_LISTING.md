@@ -19,9 +19,10 @@ The extension includes explicit support for the Azure DevOps Rooster rich-text e
 Key features:
 
 - User-controlled ON/OFF toggle, defaulting to OFF.
+- **Report an issue** action that opens a pre-filled Gmail draft for the user to review and send manually.
 - Support for `dev.azure.com` and `*.visualstudio.com`.
 - Local processing inside the browser.
-- No transmission of Azure DevOps content.
+- No automatic transmission of Azure DevOps content.
 - No analytics, telemetry, tracking, advertising, or remote code.
 - English-only content and Azure DevOps application layout remain unchanged.
 
@@ -35,7 +36,9 @@ Improve readability of Persian and other RTL text in Azure DevOps by applying ap
 
 ## Privacy summary
 
-Azure DevOps RTL Fixer locally processes supported page text to provide RTL formatting. Azure DevOps content is not persisted or transmitted to the developer or third parties. Only the user's ON/OFF preference is stored locally.
+Azure DevOps RTL Fixer locally processes supported page text to provide RTL formatting. The extension does not automatically persist or transmit Azure DevOps content to the developer or third parties. Only the user's ON/OFF preference is stored locally.
+
+If the user chooses **Report an issue**, the extension opens Gmail with a static report template and extension version. It does not automatically include Azure DevOps page content, URLs, organization/project information, or work-item data, and it does not send the report automatically.
 
 ## Suggested category
 

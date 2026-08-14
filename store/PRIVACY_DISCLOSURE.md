@@ -40,10 +40,15 @@ Chrome injects the static content script only on `dev.azure.com` and `*.visualst
 
 ## Transmission and collection by the developer
 
-- Azure DevOps content transmitted externally: **No**.
-- Data collected by the developer: **No**.
-- Third-party sharing: **No**.
+- Azure DevOps content transmitted externally automatically: **No**.
+- Data sent automatically to the developer: **No**.
+- User-submitted issue reports: **Only when the user reviews and sends the Gmail draft**.
+- Third-party sharing of Azure DevOps content: **No**.
 - Humans able to access processed content through the extension: **No**, because it remains local.
+
+## Optional issue reporting
+
+Selecting **Report an issue** opens `mail.google.com` in a new tab with the recipient, a static subject and report template, and the extension version pre-filled. This user-initiated navigation does not automatically include Azure DevOps page text, URLs, organization/project information, work-item content, selected text, user identity, or browser history. The extension does not authenticate with Gmail or send the report; the user decides whether to edit, send, or discard it.
 
 ## Use and monetization
 

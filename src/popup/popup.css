@@ -143,3 +143,63 @@ input:focus-visible + .slider {
   font-size: 11px;
   line-height: 1.45;
 }
+
+.report-issue {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px -8px -8px;
+  padding: 9px 8px;
+  border-radius: 8px;
+  color: #334155;
+  text-decoration: none;
+  transition: color 140ms ease, background 140ms ease;
+}
+
+.report-issue:hover {
+  color: #005a9e;
+  background: #edf4fb;
+}
+
+.report-issue:focus-visible {
+  outline: 3px solid rgb(0 120 212 / 30%);
+  outline-offset: 2px;
+}
+
+.report-icon,
+.report-arrow {
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.report-icon {
+  color: #0078d4;
+}
+
+.report-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.report-title {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.report-description {
+  margin-top: 1px;
+  color: #718096;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.report-arrow {
+  color: #94a3b8;
+}

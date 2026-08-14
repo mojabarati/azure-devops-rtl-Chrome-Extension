@@ -9,7 +9,7 @@
 - [x] Website access limited to supported Azure DevOps hosts.
 - [x] `<all_urls>` absent.
 - [x] Remote-code audit passed.
-- [x] Runtime network-call audit passed.
+- [x] Background network-call audit passed; optional Gmail navigation documented.
 - [x] Obvious-secret scan passed.
 - [x] Privacy Policy created.
 - [x] Limited Use disclosure present.
@@ -27,7 +27,7 @@
 ## Manual publisher tasks
 
 - [ ] Publish the GitHub repository and configure its remote.
-- [ ] Add a real public support/contact route to `PRIVACY.md` and `SECURITY.md`.
+- [x] Add a real public support/contact route to `PRIVACY.md` and `SECURITY.md`.
 - [ ] Host `PRIVACY.md` at a stable public HTTPS URL.
 - [ ] Review the independent-project name and Azure-like logo for Microsoft trademark/Store presentation risk.
 - [ ] Capture at least one sanitized 1280×800 screenshot; up to five may be supplied.
@@ -37,6 +37,7 @@
 - [ ] Load the exact unpacked release candidate in desktop Chrome.
 - [ ] Verify toolbar icon, management-page icon, and popup logo.
 - [ ] Verify the toggle and preference after a real browser restart.
+- [ ] Verify **Report an issue** opens the expected pre-filled Gmail draft and includes no Azure DevOps data automatically.
 - [ ] Verify RTL behavior on a sanitized Azure DevOps work item.
 - [ ] Verify OFF restoration on a real Azure DevOps work item.
 - [ ] Inspect Chrome DevTools for extension-originated network activity and console errors.

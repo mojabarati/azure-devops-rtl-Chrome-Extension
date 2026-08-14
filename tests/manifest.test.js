@@ -55,7 +55,8 @@ test("uses the supplied Azure RTL logo at every Chrome icon size", () => {
 
   const popup = fs.readFileSync(path.join(projectRoot, manifest.action.default_popup), "utf8");
   assert.match(popup, /\.\.\/\.\.\/icons\/icon48\.png/u);
-  assert.match(popup, /analyzed locally for RTL formatting/u);
+  assert.match(popup, /RTL analysis happens locally on your device/u);
+  assert.match(popup, /Reporting an issue opens Gmail only when you choose to do so/u);
 });
 
 test("stores only a default-off local preference", () => {

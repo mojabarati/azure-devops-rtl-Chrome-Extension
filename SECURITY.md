@@ -6,9 +6,9 @@ Security fixes are intended for the latest published Chrome Web Store version. V
 
 ## Reporting a vulnerability
 
-No private security contact or public repository remote is configured in this checkout. The publisher must add an appropriate contact or private vulnerability-reporting route before publication.
+For potentially sensitive vulnerability reports, email `mojabarati@gmail.com`. The popup's **Report an issue** action opens a pre-filled Gmail draft, but the user reviews and sends it manually.
 
-For non-sensitive security questions, use the public repository's issue tracker after it is established. Do not open a public issue containing:
+For non-sensitive security questions, use the public repository's issue tracker. Do not open a public issue or include the following in an email unless strictly necessary and appropriately sanitized:
 
 - credentials, access tokens, cookies, or authentication data;
 - private Azure DevOps organization or project URLs;

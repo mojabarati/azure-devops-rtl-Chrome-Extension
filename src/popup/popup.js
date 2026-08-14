@@ -1,11 +1,42 @@
 "use strict";
 
 const STORAGE_KEY = "rtlFixEnabled";
+const REPORT_EMAIL = "mojabarati@gmail.com";
+const REPORT_SUBJECT = "Azure DevOps RTL Fixer - Issue Report";
+const GMAIL_COMPOSE_URL = "https://mail.google.com/mail/?view=cm&fs=1";
 const toggle = document.querySelector("#enabled-toggle");
 const stateLabel = document.querySelector("#state-label");
 const status = document.querySelector("#status");
+const reportIssueLink = document.querySelector("#report-issue");
 let activeTabId = null;
 let pageSupported = false;
+
+function buildIssueReportUrl(version) {
+  const body = [
+    "Hi,",
+    "",
+    "I found an issue with Azure DevOps RTL Fixer.",
+    "",
+    `Extension version: ${version}`,
+    "",
+    "Issue description:",
+    "",
+    "Steps to reproduce:",
+    "1.",
+    "2.",
+    "3.",
+    "",
+    "Expected behavior:",
+    "",
+    "Actual behavior:",
+    "",
+    "Additional information:"
+  ].join("\n");
+
+  return `${GMAIL_COMPOSE_URL}&to=${encodeURIComponent(REPORT_EMAIL)}&su=${encodeURIComponent(REPORT_SUBJECT)}&body=${encodeURIComponent(body)}`;
+}
+
+reportIssueLink.href = buildIssueReportUrl(chrome.runtime.getManifest().version);
 
 function updateView(enabled) {
   toggle.checked = enabled;

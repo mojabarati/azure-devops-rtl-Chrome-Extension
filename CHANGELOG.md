@@ -10,6 +10,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Mixed Persian and English paragraph handling through native browser BiDi behavior.
 - Explicit Azure DevOps Rooster line-block support, including inline LTR overrides.
 - Persistent, default-OFF user toggle using `chrome.storage.local`.
+- Popup **Report an issue** action that opens a pre-filled Gmail draft for user-reviewed reports.
 - SPA and dynamically rendered content handling with a batched `MutationObserver`.
 - RTL list-item detection when meaningful Persian/Arabic follows an English prefix, including native ordered/unordered markers.
 - Production icons, popup privacy disclosure, public privacy/security documentation, Store submission metadata, and repeatable release validation.
@@ -18,7 +19,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Restricted execution to `dev.azure.com` and `*.visualstudio.com`.
 - Limited Chrome API permissions to `storage`.
-- Confirmed local-only processing with no analytics, telemetry, remote code, or outbound content transmission.
+- Confirmed local-only RTL processing with no analytics, telemetry, remote code, or automatic Azure DevOps content transmission.
+- Issue drafts include only a static template and extension version; no Azure DevOps data is added automatically or sent without user action.
 
 ## [0.1.2] — 2026-08-13
 

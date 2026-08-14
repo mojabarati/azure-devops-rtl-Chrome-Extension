@@ -19,7 +19,8 @@ Show the popup with:
 - Azure DevOps RTL Fixer;
 - RTL Fix set to On;
 - active-page status;
-- local-processing privacy message.
+- **Report an issue** action;
+- local-processing and optional Gmail-report privacy message.
 
 ## Screenshot 4 — Additional content
 

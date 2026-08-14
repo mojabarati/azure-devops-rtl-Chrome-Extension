@@ -35,8 +35,29 @@
 
       <p id="status" class="status" aria-live="polite">Checking this page…</p>
       <p class="privacy-note">
-        When enabled, page text is analyzed locally for RTL formatting. Nothing is sent off your device.
+        RTL analysis happens locally on your device. Reporting an issue opens Gmail only when you choose to do so.
       </p>
+
+      <a
+        id="report-issue"
+        class="report-issue"
+        href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=mojabarati%40gmail.com&amp;su=Azure%20DevOps%20RTL%20Fixer%20-%20Issue%20Report"
+        target="_blank"
+        rel="noopener"
+        aria-label="Report an issue with Azure DevOps RTL Fixer"
+      >
+        <svg class="report-icon" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+          <path d="M3.25 5.5A1.75 1.75 0 0 1 5 3.75h10A1.75 1.75 0 0 1 16.75 5.5v9A1.75 1.75 0 0 1 15 16.25H5a1.75 1.75 0 0 1-1.75-1.75v-9Z"></path>
+          <path d="m4 5 6 4.75L16 5"></path>
+        </svg>
+        <span class="report-copy">
+          <span class="report-title">Report an issue</span>
+          <span class="report-description">Opens a Gmail draft for you to review.</span>
+        </span>
+        <svg class="report-arrow" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+          <path d="m6 3.5 4.5 4.5L6 12.5"></path>
+        </svg>
+      </a>
     </main>
     <script src="popup.js"></script>
   </body>

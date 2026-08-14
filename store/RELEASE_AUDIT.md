@@ -1,6 +1,6 @@
 # Release Audit — Version 1.0.0
 
-Audit date: August 13, 2026
+Audit date: August 15, 2026
 
 Status: **Prepared for Chrome Web Store submission based on the audited implementation.** Final policy review and approval belong to Google, and the manual tasks below remain with the publisher.
 
@@ -30,7 +30,7 @@ No remote executable code was found. Runtime code is local vanilla JavaScript an
 
 ## Network calls
 
-No `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, analytics, telemetry, or third-party networking code was found in runtime files.
+No background `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, analytics, or telemetry code was found in runtime files. The popup contains one user-initiated HTTPS navigation to Gmail for the optional **Report an issue** draft.
 
 ## Stored data
 
@@ -42,7 +42,7 @@ When enabled, rendered Azure DevOps website and user-generated content may be re
 
 ## Third-party data sharing
 
-No Azure DevOps content or usage data is transmitted to or shared with the developer or third parties.
+No Azure DevOps content or usage data is transmitted automatically to the developer or third parties. The Gmail draft contains only a static template and extension version unless the user adds information, and nothing is sent until the user chooses to send it.
 
 ## Analytics
 
@@ -62,7 +62,7 @@ None. No profiling, affiliate links, or monetization logic exists.
 
 ## Tests
 
-- Automated detector, manifest, permission, icon, and Rooster fixture tests pass.
+- Automated detector, manifest, permission, icon, popup-report, and Rooster fixture tests pass.
 - Browser fixture confirms the actual inline-LTR Rooster line computes to RTL while enabled and restores to LTR when disabled.
 - Exact `textContent` preservation is asserted.
 
@@ -72,10 +72,10 @@ None. No profiling, affiliate links, or monetization logic exists.
 
 ## Outstanding manual tasks
 
-- Publish and configure the real repository/support URLs.
+- Confirm the public repository, support email, and Privacy Policy URLs in the Store Dashboard.
 - Host the Privacy Policy at a public HTTPS URL.
-- Add a non-invented contact or private security-reporting route.
 - Produce sanitized Store screenshots and promotional artwork.
 - Decide whether the current Azure-like logo and product naming present unacceptable trademark or affiliation risk. The 128px artwork also sits close to some canvas edges, which may be a Store presentation/padding concern; it was preserved as instructed.
 - Perform final real-Chrome and real-Azure-DevOps smoke tests with the exact release candidate.
+- Verify that **Report an issue** opens the expected pre-filled Gmail draft without Azure DevOps data.
 - Complete Dashboard disclosures, upload assets/ZIP, and submit for review.
