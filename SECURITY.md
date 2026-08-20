@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes are intended for the latest published Chrome Web Store version. Version 1.2.0 is the current release prepared by this repository.
+Security fixes are intended for the latest published Chrome Web Store version. Version 1.3.0 is the current release prepared by this repository.
 
 ## Reporting a vulnerability
 

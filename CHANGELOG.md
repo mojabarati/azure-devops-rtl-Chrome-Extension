@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-08-21
+
 ### Added
 
 - Independent Azure DevOps and GitHub popup toggles with default-OFF settings and backward-compatible preference migration.

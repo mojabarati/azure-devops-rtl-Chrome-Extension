@@ -15,7 +15,7 @@
 
 <p align="center">
   <img alt="Chrome Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white">
-  <img alt="Version 1.2.0" src="https://img.shields.io/badge/version-1.2.0-0078D4">
+  <img alt="Version 1.3.0" src="https://img.shields.io/badge/version-1.3.0-0078D4">
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2EA44F">
 </p>
 

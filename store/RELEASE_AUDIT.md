@@ -1,4 +1,4 @@
-# Release Audit — Version 1.2.0
+# Release Audit — Version 1.3.0
 
 Audit date: August 20, 2026
 
@@ -8,7 +8,7 @@ Status: **Prepared for Chrome Web Store submission based on the audited implemen
 
 - Manifest V3.
 - Name: Azure DevOps RTL Fixer.
-- Version: 1.2.0.
+- Version: 1.3.0.
 - Description: 86 characters, under Chrome's 132-character limit.
 - All icon, popup, service-worker, content-script, and CSS references exist.
 
@@ -70,7 +70,7 @@ None. No profiling, affiliate links, or monetization logic exists.
 
 ## Release package
 
-`npm run package` creates `dist/azure-devops-rtl-fixer-v1.2.0.zip` with `manifest.json` at the ZIP root. Only `manifest.json`, `icons/`, and `src/` are shipped.
+`npm run package` creates `dist/azure-devops-rtl-fixer-v1.3.0.zip` with `manifest.json` at the ZIP root. Only `manifest.json`, `icons/`, and `src/` are shipped.
 
 ## Outstanding manual tasks
 

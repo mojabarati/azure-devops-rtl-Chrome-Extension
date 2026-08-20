@@ -1,6 +1,6 @@
 # Chrome Web Store Permission Justifications
 
-These explanations match the version 1.2.0 manifest.
+These explanations match the version 1.3.0 manifest.
 
 ## Chrome API permission: `storage`
 

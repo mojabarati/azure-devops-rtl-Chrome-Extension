@@ -3,7 +3,7 @@
 ## Repository and release
 
 - [x] Manifest V3 reviewed.
-- [x] Version finalized as `1.2.0` for the GitHub rendered-Markdown feature release.
+- [x] Version finalized as `1.3.0` for the independent platform controls release.
 - [x] Manifest description reviewed and within 132 characters.
 - [x] Permissions audited and minimized.
 - [x] Website access limited to supported Azure DevOps hosts and `github.com`.
