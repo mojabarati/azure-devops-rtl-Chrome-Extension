@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GitHub Rendered Markdown RTL Regression Fixture</title>
+    <link rel="stylesheet" href="../../src/content/rtl.css">
+    <style>
+      body { margin: 24px; font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      nav { margin-bottom: 24px; }
+      article.markdown-body { max-width: 860px; }
+      pre { padding: 12px; background: #f6f8fa; }
+      blockquote { margin-left: 0; padding-left: 16px; border-left: 4px solid #d0d7de; }
+      table { border-collapse: collapse; }
+      th, td { padding: 6px 12px; border: 1px solid #d0d7de; }
+      .task-list-item { list-style: none; }
+      .task-list-item input { margin-right: 8px; }
+    </style>
+  </head>
+  <body>
+    <nav id="outside-markdown">ناوبری فارسی خارج از سند</nav>
+
+    <article class="markdown-body entry-content container-lg" itemprop="text" id="markdown-root">
+      <div class="markdown-heading" dir="auto">
+        <h1 id="mixed-heading" class="heading-element" dir="auto">Product Discovery / کشف محصول</h1>
+      </div>
+
+      <p id="english-paragraph">This paragraph is entirely English.</p>
+      <p id="persian-paragraph">این یک پاراگراف فارسی برای بررسی جهت متن است.</p>
+      <p id="english-prefix">FA: این یک پاراگراف فارسی با برچسب انگلیسی است.</p>
+      <p id="technical-paragraph">برای build پروژه از <code id="inline-code">npm run build</code> استفاده کنید.</p>
+      <p id="linked-paragraph">برای اطلاعات بیشتر به <a id="documentation-link" href="https://docs.github.com/">GitHub Documentation</a> مراجعه کنید.</p>
+
+      <ol id="ordered-list">
+        <li id="ordered-rtl">مرحله اول</li>
+        <li id="ordered-mixed">مرحله دوم با REST API</li>
+      </ol>
+
+      <ul id="unordered-list">
+        <li id="unordered-rtl">گزینه فارسی</li>
+        <li id="nested-parent">مرحله اصلی
+          <ul>
+            <li id="nested-rtl">زیرمرحله فارسی</li>
+            <li id="nested-english">English nested item</li>
+          </ul>
+        </li>
+        <li id="task-item" class="task-list-item"><input id="task-checkbox" type="checkbox">آماده‌سازی PRD</li>
+      </ul>
+
+      <blockquote id="persian-blockquote"><p id="blockquote-paragraph">این یک توضیح فارسی است.</p></blockquote>
+
+      <table>
+        <thead><tr><th id="english-heading-cell">Field</th><th id="persian-heading-cell">توضیحات</th></tr></thead>
+        <tbody><tr><td id="english-cell">Status</td><td id="persian-cell">آماده برای تست</td></tr></tbody>
+      </table>
+
+      <pre id="fenced-code"><code>const direction = "ltr";</code></pre>
+    </article>
+
+    <section class="comment-body">
+      <article class="markdown-body" itemprop="text" id="excluded-comment">
+        <p id="comment-paragraph">این متن شبیه بدنه نظر گیت‌هاب است.</p>
+      </article>
+    </section>
+
+    <pre id="fixture-output"></pre>
+
+    <script>
+      let messageListener;
+
+      window.chrome = {
+        runtime: {
+          onMessage: {
+            addListener(listener) {
+              messageListener = listener;
+            }
+          }
+        },
+        storage: {
+          onChanged: { addListener() {} },
+          local: {
+            get(_defaults, callback) {
+              callback({ rtlFixEnabled: true });
+            }
+          }
+        }
+      };
+
+      window.fixtureOriginalText = document.querySelector("#markdown-root").textContent;
+
+      function wait(milliseconds) {
+        return new Promise((resolve) => setTimeout(resolve, milliseconds));
+      }
+
+      function sendMessage(message) {
+        return new Promise((resolve) => {
+          messageListener(message, {}, resolve);
+        });
+      }
+    </script>
+    <script src="../../src/content/rtl-detector.js"></script>
+    <script src="../../src/content/github-markdown-adapter.js"></script>
+    <script>
+      const githubAdapter = window.AdoRtlGitHubMarkdownAdapter;
+      const githubLocation = Object.freeze({ hostname: "github.com", pathname: "/owner/repository" });
+
+      window.AdoRtlSiteAdapter = Object.freeze({
+        ...githubAdapter,
+        containsBlock(block, documentLike) {
+          return githubAdapter.containsBlock(block, documentLike, githubLocation);
+        },
+        getProcessingScopes(node, documentLike) {
+          return githubAdapter.getProcessingScopes(node, documentLike, githubLocation);
+        },
+        isPageSupported(documentLike) {
+          return githubAdapter.isPageSupported(documentLike, githubLocation);
+        }
+      });
+    </script>
+    <script src="../../src/content/dom-utils.js"></script>
+    <script src="../../src/content/content.js"></script>
+    <script>
+      async function runFixture() {
+        await wait(300);
+
+        const assertions = [];
+        const check = (name, passed, detail = "") => assertions.push({ name, passed: Boolean(passed), detail });
+        const hasRtlClass = (id) => document.querySelector(`#${id}`).classList.contains("ado-rtl-text-block");
+        const direction = (id) => getComputedStyle(document.querySelector(`#${id}`)).direction;
+        const alignment = (id) => getComputedStyle(document.querySelector(`#${id}`)).textAlign;
+
+        check("Persian paragraph is RTL", hasRtlClass("persian-paragraph") && direction("persian-paragraph") === "rtl");
+        check("Persian paragraph is right aligned", alignment("persian-paragraph") === "right");
+        check("English paragraph is unchanged", !hasRtlClass("english-paragraph") && direction("english-paragraph") === "ltr");
+        check("English-prefixed Persian paragraph is RTL", hasRtlClass("english-prefix"));
+        check("Mixed heading is RTL", hasRtlClass("mixed-heading") && direction("mixed-heading") === "rtl");
+        check("Technical paragraph is RTL", hasRtlClass("technical-paragraph"));
+        check("Inline code remains LTR", direction("inline-code") === "ltr");
+        check("Persian link paragraph is RTL", hasRtlClass("linked-paragraph"));
+        check("Link target is preserved", document.querySelector("#documentation-link").getAttribute("href") === "https://docs.github.com/");
+        check("Ordered list item and marker are RTL", hasRtlClass("ordered-rtl") && getComputedStyle(document.querySelector("#ordered-rtl"), "::marker").direction === "rtl");
+        check("Mixed ordered list item is RTL", hasRtlClass("ordered-mixed"));
+        check("Unordered list item and marker are RTL", hasRtlClass("unordered-rtl") && getComputedStyle(document.querySelector("#unordered-rtl"), "::marker").direction === "rtl");
+        check("Nested Persian item is RTL", hasRtlClass("nested-rtl"));
+        check("Nested English item remains LTR", !hasRtlClass("nested-english") && direction("nested-english") === "ltr");
+        check("Task list item is RTL", hasRtlClass("task-item"));
+        check("Task checkbox remains usable", !document.querySelector("#task-checkbox").disabled);
+        check("Blockquote paragraph is RTL", hasRtlClass("blockquote-paragraph"));
+        check("Persian table cells are RTL", hasRtlClass("persian-heading-cell") && hasRtlClass("persian-cell"));
+        check("English table cells are unchanged", !hasRtlClass("english-heading-cell") && !hasRtlClass("english-cell"));
+        check("Fenced code block is unchanged", !hasRtlClass("fenced-code") && direction("fenced-code") === "ltr");
+        check("Content outside Markdown root is unchanged", !hasRtlClass("outside-markdown") && direction("outside-markdown") === "ltr");
+        check("Comment-like Markdown root is excluded", !hasRtlClass("comment-paragraph") && direction("comment-paragraph") === "ltr");
+        check("Initial Markdown text is preserved", document.querySelector("#markdown-root").textContent === window.fixtureOriginalText);
+
+        const dynamicParagraph = document.createElement("p");
+        dynamicParagraph.id = "dynamic-paragraph";
+        dynamicParagraph.textContent = "این پاراگراف به صورت پویا اضافه شده است.";
+        document.querySelector("#markdown-root").append(dynamicParagraph);
+        await wait(250);
+        check("Dynamic Markdown insertion is processed", hasRtlClass("dynamic-paragraph"));
+
+        const textBeforeDisable = document.querySelector("#markdown-root").textContent;
+        await sendMessage({ type: "ADO_RTL_SET_ENABLED", enabled: false });
+        await wait(50);
+
+        check("Disable removes every extension class", document.querySelectorAll(".ado-rtl-text-block").length === 0);
+        check("Disable preserves exact Markdown text", document.querySelector("#markdown-root").textContent === textBeforeDisable);
+        check("Disable restores Persian paragraph presentation", direction("persian-paragraph") === "ltr");
+        check("Disable preserves link target", document.querySelector("#documentation-link").getAttribute("href") === "https://docs.github.com/");
+
+        window.fixtureResults = {
+          passed: assertions.every((assertion) => assertion.passed),
+          assertions
+        };
+        document.querySelector("#fixture-output").textContent = JSON.stringify(window.fixtureResults, null, 2);
+        document.title = window.fixtureResults.passed
+          ? "PASS — GitHub Rendered Markdown RTL Fixer"
+          : "FAIL — GitHub Rendered Markdown RTL Fixer";
+      }
+
+      runFixture();
+    </script>
+  </body>
+</html>

@@ -20,11 +20,20 @@ test("requests only storage permission", () => {
   assert.doesNotMatch(JSON.stringify(manifest), /<all_urls>/u);
 });
 
-test("content scripts only match supported Azure DevOps cloud hosts", () => {
-  assert.deepEqual(manifest.content_scripts[0].matches, [
+test("content scripts only match supported Azure DevOps and GitHub hosts", () => {
+  const azureScript = manifest.content_scripts.find((entry) => entry.matches.includes("https://dev.azure.com/*"));
+  const githubScript = manifest.content_scripts.find((entry) => entry.matches.includes("https://github.com/*"));
+
+  assert.deepEqual(azureScript.matches, [
     "https://dev.azure.com/*",
     "https://*.visualstudio.com/*"
   ]);
+  assert.deepEqual(githubScript.matches, ["https://github.com/*"]);
+  assert.equal(manifest.content_scripts.length, 2);
+  assert.match(githubScript.js.join("\n"), /github-markdown-adapter\.js/u);
+  assert.doesNotMatch(githubScript.js.join("\n"), /azure-selectors\.js/u);
+  assert.match(azureScript.js.join("\n"), /azure-selectors\.js/u);
+  assert.doesNotMatch(azureScript.js.join("\n"), /github-markdown-adapter\.js/u);
 });
 
 test("every manifest file reference exists", () => {
@@ -86,16 +95,24 @@ test("content processing avoids destructive or continuously polling APIs", () =>
 
 test("RTL styling overrides only the confirmed text block", () => {
   const css = fs.readFileSync(path.join(projectRoot, "src/content/rtl.css"), "utf8");
+  const baseRule = css.match(/\.ado-rtl-text-block\s*\{[^}]+\}/u)?.[0] || "";
 
   assert.match(css, /\.ado-rtl-text-block/u);
-  assert.match(css, /direction:\s*rtl/u);
-  assert.match(css, /text-align:\s*right/u);
-  assert.doesNotMatch(css, /unicode-bidi/u);
+  assert.match(baseRule, /direction:\s*rtl/u);
+  assert.match(baseRule, /text-align:\s*right/u);
+  assert.doesNotMatch(baseRule, /unicode-bidi/u);
+  assert.match(css, /article\.markdown-body[^}]+unicode-bidi:\s*isolate/su);
 });
 
-test("logical-block helper loads before the content processor", () => {
-  const scripts = manifest.content_scripts[0].js;
-  assert.ok(scripts.indexOf("src/content/dom-utils.js") < scripts.indexOf("src/content/content.js"));
+test("site adapters and logical-block helper load before the shared content processor", () => {
+  for (const entry of manifest.content_scripts) {
+    const scripts = entry.js;
+    assert.ok(scripts.indexOf("src/content/dom-utils.js") < scripts.indexOf("src/content/content.js"));
+    assert.ok(
+      scripts.some((script) => /(?:azure-selectors|github-markdown-adapter)\.js$/u.test(script)),
+      entry.matches.join(",")
+    );
+  }
 });
 
 test("real Rooster browser regression fixture is included", () => {
@@ -110,4 +127,15 @@ test("real Rooster browser regression fixture is included", () => {
   assert.match(fixture, /id="ordered-mixed"/u);
   assert.match(fixture, /id="unordered-mixed"/u);
   assert.match(fixture, /getComputedStyle\(orderedMixed, "::marker"\)\.direction === "rtl"/u);
+});
+
+test("GitHub rendered Markdown browser regression fixture is included", () => {
+  const fixturePath = path.join(projectRoot, "tests/fixtures/github-markdown.html");
+  assert.equal(fs.existsSync(fixturePath), true);
+
+  const fixture = fs.readFileSync(fixturePath, "utf8");
+  assert.match(fixture, /article class="markdown-body entry-content container-lg" itemprop="text"/u);
+  assert.match(fixture, /PASS — GitHub Rendered Markdown RTL Fixer/u);
+  assert.match(fixture, /Dynamic Markdown insertion is processed/u);
+  assert.match(fixture, /Disable preserves exact Markdown text/u);
 });

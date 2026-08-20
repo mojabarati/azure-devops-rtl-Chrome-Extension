@@ -126,7 +126,7 @@ test("existing toggle flow remains unchanged", () => {
 
   assert.equal(toggle.checked, true);
   assert.equal(result.elements["#state-label"].textContent, "On");
-  assert.equal(result.elements["#status"].textContent, "RTL Fix is active on this Azure DevOps page.");
+  assert.equal(result.elements["#status"].textContent, "RTL Fix is active on this page.");
 
   toggle.checked = false;
   result.changeHandlers[0]();
@@ -138,4 +138,13 @@ test("existing toggle flow remains unchanged", () => {
   assert.equal(result.tabMessages.at(-1).message.enabled, false);
   assert.equal(result.elements["#state-label"].textContent, "Off");
   assert.equal(result.elements["#status"].textContent, "RTL Fix is disabled.");
+});
+
+test("popup names both supported environments when the current page is unsupported", () => {
+  const result = runPopup({ storedEnabled: false, supported: false });
+
+  assert.equal(
+    result.elements["#status"].textContent,
+    "Open a supported Azure DevOps or GitHub Markdown page."
+  );
 });
