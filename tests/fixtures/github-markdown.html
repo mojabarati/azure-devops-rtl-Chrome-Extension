@@ -66,6 +66,7 @@
 
     <script>
       let messageListener;
+      let storageChangeListener;
 
       window.chrome = {
         runtime: {
@@ -76,10 +77,17 @@
           }
         },
         storage: {
-          onChanged: { addListener() {} },
+          onChanged: {
+            addListener(listener) {
+              storageChangeListener = listener;
+            }
+          },
           local: {
             get(_defaults, callback) {
-              callback({ rtlFixEnabled: true });
+              callback({ azureRtlFixEnabled: false, githubRtlFixEnabled: true });
+            },
+            set(_values, callback) {
+              callback?.();
             }
           }
         }
@@ -96,7 +104,12 @@
           messageListener(message, {}, resolve);
         });
       }
+
+      function setGitHubEnabled(enabled) {
+        storageChangeListener({ githubRtlFixEnabled: { newValue: enabled } }, "local");
+      }
     </script>
+    <script src="../../src/shared/preferences.js"></script>
     <script src="../../src/content/rtl-detector.js"></script>
     <script src="../../src/content/github-markdown-adapter.js"></script>
     <script>
@@ -160,7 +173,7 @@
         check("Dynamic Markdown insertion is processed", hasRtlClass("dynamic-paragraph"));
 
         const textBeforeDisable = document.querySelector("#markdown-root").textContent;
-        await sendMessage({ type: "ADO_RTL_SET_ENABLED", enabled: false });
+        setGitHubEnabled(false);
         await wait(50);
 
         check("Disable removes every extension class", document.querySelectorAll(".ado-rtl-text-block").length === 0);

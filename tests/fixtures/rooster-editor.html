@@ -68,12 +68,20 @@
       const originalText = persianBlock.textContent;
       const originalHtml = persianBlock.outerHTML;
       let messageListener;
+      let storageChangeListener;
 
       window.chrome = {
         runtime: { onMessage: { addListener(listener) { messageListener = listener; } } },
         storage: {
-          onChanged: { addListener() {} },
-          local: { get(_defaults, callback) { callback({ rtlFixEnabled: true }); } }
+          onChanged: { addListener(listener) { storageChangeListener = listener; } },
+          local: {
+            get(_defaults, callback) {
+              callback({ azureRtlFixEnabled: true, githubRtlFixEnabled: false });
+            },
+            set(_values, callback) {
+              callback?.();
+            }
+          }
         }
       };
 
@@ -99,6 +107,7 @@
         return { name, passed, detail };
       }
     </script>
+    <script src="../../src/shared/preferences.js"></script>
     <script src="../../src/content/rtl-detector.js"></script>
     <script src="../../src/content/azure-selectors.js"></script>
     <script src="../../src/content/dom-utils.js"></script>
@@ -183,7 +192,7 @@
           assertion("English-only line returns to inline LTR", getComputedStyle(dynamicBlock).direction === "ltr")
         );
 
-        messageListener({ type: "ADO_RTL_SET_ENABLED", enabled: false }, null, () => {});
+        storageChangeListener({ azureRtlFixEnabled: { newValue: false } }, "local");
         await new Promise((resolve) => setTimeout(resolve, 50));
         const offBlock = snapshot(persianBlock);
         const offEditor = snapshot(editor);

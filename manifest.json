@@ -31,6 +31,7 @@
         "https://*.visualstudio.com/*"
       ],
       "js": [
+        "src/shared/preferences.js",
         "src/content/rtl-detector.js",
         "src/content/azure-selectors.js",
         "src/content/dom-utils.js",
@@ -46,6 +47,7 @@
         "https://github.com/*"
       ],
       "js": [
+        "src/shared/preferences.js",
         "src/content/rtl-detector.js",
         "src/content/github-markdown-adapter.js",
         "src/content/dom-utils.js",

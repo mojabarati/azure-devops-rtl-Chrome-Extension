@@ -1,11 +1,7 @@
 "use strict";
 
-const STORAGE_KEY = "rtlFixEnabled";
+importScripts("../shared/preferences.js");
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.get(STORAGE_KEY, (result) => {
-    if (typeof result[STORAGE_KEY] !== "boolean") {
-      chrome.storage.local.set({ [STORAGE_KEY]: false });
-    }
-  });
+  globalThis.AdoRtlPreferences.ensureMigrated(chrome.storage.local);
 });

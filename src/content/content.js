@@ -2,16 +2,17 @@
   "use strict";
 
   const DEBUG = false;
-  const STORAGE_KEY = "rtlFixEnabled";
   const RTL_CLASS = "ado-rtl-text-block";
   const MAX_BLOCKS_PER_SLICE = 100;
   const ROOSTER_INPUT_DELAY_MS = 80;
   const detector = globalThis.AdoRtlDetector;
   const domUtils = globalThis.AdoRtlDomUtils;
   const siteAdapter = globalThis.AdoRtlSiteAdapter;
+  const preferences = globalThis.AdoRtlPreferences;
   const selectors = siteAdapter?.selectors;
+  const storageKey = preferences?.getStorageKey(siteAdapter?.id);
 
-  if (!detector || !siteAdapter || !selectors || !domUtils) {
+  if (!detector || !siteAdapter || !selectors || !domUtils || !preferences || !storageKey) {
     return;
   }
 
@@ -402,27 +403,15 @@
     if (message?.type === "ADO_RTL_GET_STATUS") {
       sendResponse({
         enabled,
-        supported: siteAdapter.isPageSupported(document, globalThis.location)
-      });
-      return;
-    }
-
-    if (message?.type === "ADO_RTL_SET_ENABLED") {
-      setEnabled(message.enabled);
-      sendResponse({
-        enabled,
+        platformId: siteAdapter.id,
         supported: siteAdapter.isPageSupported(document, globalThis.location)
       });
     }
   });
 
-  chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === "local" && changes[STORAGE_KEY]) {
-      setEnabled(changes[STORAGE_KEY].newValue);
-    }
-  });
+  preferences.listenForPlatformChanges(chrome.storage, siteAdapter.id, setEnabled);
 
-  chrome.storage.local.get({ [STORAGE_KEY]: false }, (result) => {
-    setEnabled(result[STORAGE_KEY]);
+  preferences.ensureMigrated(chrome.storage.local, (stored) => {
+    setEnabled(stored[storageKey]);
   });
 })();

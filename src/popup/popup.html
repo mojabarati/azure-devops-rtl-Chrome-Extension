@@ -11,29 +11,72 @@
       <header class="brand">
         <img
           src="../../icons/icon48.png"
-          alt="Azure DevOps RTL Fixer"
+          alt=""
           class="app-logo"
-          width="40"
-          height="40"
+          width="44"
+          height="44"
         >
-        <div>
+        <div class="brand-copy">
           <h1>Azure DevOps RTL Fixer</h1>
-          <p>Persian / RTL support</p>
+          <p>Persian and RTL support</p>
         </div>
       </header>
 
-      <section class="control" aria-labelledby="toggle-label">
-        <div>
-          <span id="toggle-label" class="control-title">RTL Fix</span>
-          <span id="state-label" class="state-label">Off</span>
+      <section class="platforms" aria-labelledby="platforms-heading">
+        <h2 id="platforms-heading">Platforms</h2>
+        <div class="platform-card">
+          <label class="platform-row" for="azure-toggle">
+            <span class="platform-copy">
+              <span id="azure-label" class="platform-name">Azure DevOps</span>
+              <span id="azure-description" class="platform-description">Work items and rich text</span>
+            </span>
+            <span class="platform-setting">
+              <span id="azure-state" class="state-label">Off</span>
+              <span class="switch">
+                <input
+                  id="azure-toggle"
+                  type="checkbox"
+                  role="switch"
+                  aria-labelledby="azure-label azure-state"
+                  aria-describedby="azure-description"
+                  disabled
+                >
+                <span class="slider" aria-hidden="true"></span>
+              </span>
+            </span>
+          </label>
+
+          <label class="platform-row" for="github-toggle">
+            <span class="platform-copy">
+              <span id="github-label" class="platform-name">GitHub</span>
+              <span id="github-description" class="platform-description">Rendered Markdown</span>
+            </span>
+            <span class="platform-setting">
+              <span id="github-state" class="state-label">Off</span>
+              <span class="switch">
+                <input
+                  id="github-toggle"
+                  type="checkbox"
+                  role="switch"
+                  aria-labelledby="github-label github-state"
+                  aria-describedby="github-description"
+                  disabled
+                >
+                <span class="slider" aria-hidden="true"></span>
+              </span>
+            </span>
+          </label>
         </div>
-        <label class="switch">
-          <input id="enabled-toggle" type="checkbox" role="switch" aria-labelledby="toggle-label state-label">
-          <span class="slider" aria-hidden="true"></span>
-        </label>
       </section>
 
-      <p id="status" class="status" aria-live="polite">Checking this page…</p>
+      <section id="status" class="status-card" role="status" aria-live="polite" aria-atomic="true">
+        <span class="status-indicator" aria-hidden="true"></span>
+        <span class="status-copy">
+          <span id="status-title" class="status-title">Checking this page&hellip;</span>
+          <span id="status-message" class="status-message">Your saved preferences are still available.</span>
+        </span>
+      </section>
+
       <p class="privacy-note">
         RTL analysis happens locally on your device. Reporting an issue opens Gmail only when you choose to do so.
       </p>
@@ -59,6 +102,7 @@
         </svg>
       </a>
     </main>
+    <script src="../shared/preferences.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

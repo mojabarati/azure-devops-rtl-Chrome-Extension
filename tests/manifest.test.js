@@ -68,8 +68,9 @@ test("uses the supplied Azure RTL logo at every Chrome icon size", () => {
   assert.match(popup, /Reporting an issue opens Gmail only when you choose to do so/u);
 });
 
-test("stores only a default-off local preference", () => {
+test("stores only independent default-off local preferences", () => {
   const sources = [
+    "src/shared/preferences.js",
     "src/background/service-worker.js",
     "src/content/content.js",
     "src/popup/popup.js"
@@ -77,7 +78,9 @@ test("stores only a default-off local preference", () => {
 
   assert.doesNotMatch(sources, /chrome\.storage\.sync/u);
   assert.match(sources, /rtlFixEnabled/u);
-  assert.match(sources, /\[STORAGE_KEY\]: false/u);
+  assert.match(sources, /azureRtlFixEnabled/u);
+  assert.match(sources, /githubRtlFixEnabled/u);
+  assert.match(sources, /legacyValue[\s\S]*:\s*false/u);
 });
 
 test("content processing avoids destructive or continuously polling APIs", () => {
@@ -107,6 +110,7 @@ test("RTL styling overrides only the confirmed text block", () => {
 test("site adapters and logical-block helper load before the shared content processor", () => {
   for (const entry of manifest.content_scripts) {
     const scripts = entry.js;
+    assert.equal(scripts[0], "src/shared/preferences.js");
     assert.ok(scripts.indexOf("src/content/dom-utils.js") < scripts.indexOf("src/content/content.js"));
     assert.ok(
       scripts.some((script) => /(?:azure-selectors|github-markdown-adapter)\.js$/u.test(script)),
