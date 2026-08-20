@@ -45,9 +45,9 @@ function updateView(enabled) {
   status.classList.toggle("inactive", pageSupported && !enabled);
 
   if (!pageSupported) {
-    status.textContent = "Open an Azure DevOps page to use RTL Fixer.";
+    status.textContent = "Open a supported Azure DevOps or GitHub Markdown page.";
   } else if (enabled) {
-    status.textContent = "RTL Fix is active on this Azure DevOps page.";
+    status.textContent = "RTL Fix is active on this page.";
   } else {
     status.textContent = "RTL Fix is disabled.";
   }

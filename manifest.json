@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Azure DevOps RTL Fixer",
   "version": "1.1.0",
-  "description": "Improve Persian and RTL text readability in Azure DevOps, including mixed Persian and English content.",
+  "description": "Improve Persian and RTL text readability in Azure DevOps and GitHub rendered Markdown.",
   "permissions": [
     "storage"
   ],
@@ -33,6 +33,21 @@
       "js": [
         "src/content/rtl-detector.js",
         "src/content/azure-selectors.js",
+        "src/content/dom-utils.js",
+        "src/content/content.js"
+      ],
+      "css": [
+        "src/content/rtl.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://github.com/*"
+      ],
+      "js": [
+        "src/content/rtl-detector.js",
+        "src/content/github-markdown-adapter.js",
         "src/content/dom-utils.js",
         "src/content/content.js"
       ],

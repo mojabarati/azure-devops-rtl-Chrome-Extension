@@ -2,3 +2,21 @@
   direction: rtl !important;
   text-align: right !important;
 }
+
+article.markdown-body .ado-rtl-text-block code {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+article.markdown-body .ado-rtl-text-block pre,
+article.markdown-body .ado-rtl-text-block pre code {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate;
+}
+
+article.markdown-body li.ado-rtl-text-block > ol,
+article.markdown-body li.ado-rtl-text-block > ul {
+  direction: ltr;
+  text-align: left;
+}

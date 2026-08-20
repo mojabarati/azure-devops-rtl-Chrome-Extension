@@ -36,10 +36,13 @@ check(JSON.stringify(manifest.permissions) === JSON.stringify(["storage"]), "Onl
 check(manifest.host_permissions === undefined, "host_permissions must be omitted.");
 check(!JSON.stringify(manifest).includes("<all_urls>"), "<all_urls> is prohibited.");
 
-const expectedMatches = ["https://dev.azure.com/*", "https://*.visualstudio.com/*"];
+const expectedMatches = [
+  ["https://dev.azure.com/*", "https://*.visualstudio.com/*"],
+  ["https://github.com/*"]
+];
 check(
-  JSON.stringify(manifest.content_scripts?.[0]?.matches) === JSON.stringify(expectedMatches),
-  "Content-script matches must remain limited to supported Azure DevOps hosts."
+  JSON.stringify((manifest.content_scripts || []).map((entry) => entry.matches)) === JSON.stringify(expectedMatches),
+  "Content-script matches must remain limited to supported Azure DevOps and GitHub hosts."
 );
 
 const runtimeReferences = [
