@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes are intended for the latest published Chrome Web Store version. Version 1.0.0 is the first planned public release.
+Security fixes are intended for the latest published Chrome Web Store version. Version 1.1.0 is the current release prepared by this repository.
 
 ## Reporting a vulnerability
 
@@ -11,12 +11,12 @@ For potentially sensitive vulnerability reports, email `mojabarati@gmail.com`. T
 For non-sensitive security questions, use the public repository's issue tracker. Do not open a public issue or include the following in an email unless strictly necessary and appropriately sanitized:
 
 - credentials, access tokens, cookies, or authentication data;
-- private Azure DevOps organization or project URLs;
-- confidential work-item text, screenshots, employee data, or customer information;
+- private Azure DevOps organization, project, GitHub repository, or file URLs;
+- confidential work-item or Markdown text, screenshots, employee data, or customer information;
 - exploit details that would put users at immediate risk.
 
 A useful report should identify the affected version, explain the impact, provide sanitized reproduction steps, and describe the browser/operating-system environment.
 
 ## Scope
 
-Relevant issues include unintended content transmission, excessive site access, remote-code execution, persistent modification of Azure DevOps content, or bypass of the extension's OFF state.
+Relevant issues include unintended content transmission, excessive site access, remote-code execution, persistent modification of Azure DevOps or GitHub content, processing outside supported rendered-Markdown roots, or bypass of the extension's OFF state.

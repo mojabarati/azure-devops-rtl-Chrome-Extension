@@ -4,17 +4,18 @@
 
 ## Single purpose
 
-Improve readability of Persian and other RTL text in Azure DevOps by locally applying text-direction formatting.
+Improve readability of Persian and other RTL text in supported Azure DevOps content and GitHub rendered Markdown by locally applying text-direction formatting.
 
 ## Data handled locally
 
-The extension accesses and locally processes rendered content on supported Azure DevOps pages. Depending on the page, this can include:
+The extension accesses and locally processes rendered content on supported Azure DevOps pages and GitHub rendered-Markdown documents. Depending on the page, this can include:
 
 - website content and resources;
 - user-generated content;
 - work-item titles and descriptions;
 - comments and discussions;
 - Acceptance Criteria, Repro Steps, and other rendered text fields.
+- GitHub Markdown headings, paragraphs, list items, blockquotes, and table cells.
 
 This content is read transiently from the DOM only to determine RTL presentation. Do not answer that the extension handles no user data merely because processing is local.
 
@@ -31,24 +32,24 @@ Verify the current Dashboard categories and disclose conservatively if its wordi
 
 ## URLs and site access
 
-Chrome injects the static content script only on `dev.azure.com` and `*.visualstudio.com` according to manifest match patterns. Extension code does not read, log, store, or transmit the current URL, organization name, or project name.
+Chrome injects static content scripts only on `dev.azure.com`, `*.visualstudio.com`, and `github.com` according to manifest match patterns. GitHub processing is additionally restricted to repository/directory READMEs and rendered `.md`/`.markdown` files. Extension code does not read, log, store, or transmit the current URL, organization, project, or repository name.
 
 ## Stored data
 
 - Stored: one Boolean preference, `rtlFixEnabled`, in `chrome.storage.local`.
-- Not stored: Azure DevOps page content, comments, titles, URLs, usernames, organization/project information, or credentials.
+- Not stored: Azure DevOps or GitHub page content, comments, titles, Markdown, URLs, usernames, organization/project/repository information, or credentials.
 
 ## Transmission and collection by the developer
 
-- Azure DevOps content transmitted externally automatically: **No**.
+- Azure DevOps or GitHub content transmitted externally automatically: **No**.
 - Data sent automatically to the developer: **No**.
 - User-submitted issue reports: **Only when the user reviews and sends the Gmail draft**.
-- Third-party sharing of Azure DevOps content: **No**.
+- Third-party sharing of supported page content: **No**.
 - Humans able to access processed content through the extension: **No**, because it remains local.
 
 ## Optional issue reporting
 
-Selecting **Report an issue** opens `mail.google.com` in a new tab with the recipient, a static subject and report template, and the extension version pre-filled. This user-initiated navigation does not automatically include Azure DevOps page text, URLs, organization/project information, work-item content, selected text, user identity, or browser history. The extension does not authenticate with Gmail or send the report; the user decides whether to edit, send, or discard it.
+Selecting **Report an issue** opens `mail.google.com` in a new tab with the recipient, a static subject and report template, and the extension version pre-filled. This user-initiated navigation does not automatically include Azure DevOps or GitHub page text, URLs, organization/project/repository information, work-item or Markdown content, selected text, user identity, or browser history. The extension does not authenticate with Gmail or send the report; the user decides whether to edit, send, or discard it.
 
 ## Use and monetization
 

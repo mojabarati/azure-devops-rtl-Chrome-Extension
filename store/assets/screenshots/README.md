@@ -22,7 +22,11 @@ Show the popup with:
 - **Report an issue** action;
 - local-processing and optional Gmail-report privacy message.
 
-## Screenshot 4 — Additional content
+## Screenshot 4 — GitHub rendered Markdown
+
+Show a public or sanitized repository README containing mixed Persian/English text with RTL Fix enabled. Keep repository controls and code views unchanged, and do not include private repository information.
+
+## Screenshot 5 — Additional Azure DevOps content
 
 Show a sanitized Discussion, Acceptance Criteria, Repro Steps, or another real work-item field demonstrating RTL formatting.
 
