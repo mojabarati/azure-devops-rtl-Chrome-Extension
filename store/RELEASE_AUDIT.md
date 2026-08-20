@@ -1,6 +1,6 @@
-# Release Audit — Version 1.0.0
+# Release Audit — Version 1.2.0
 
-Audit date: August 15, 2026
+Audit date: August 20, 2026
 
 Status: **Prepared for Chrome Web Store submission based on the audited implementation.** Final policy review and approval belong to Google, and the manual tasks below remain with the publisher.
 
@@ -8,8 +8,8 @@ Status: **Prepared for Chrome Web Store submission based on the audited implemen
 
 - Manifest V3.
 - Name: Azure DevOps RTL Fixer.
-- Version: 1.0.0.
-- Description: 102 characters, under Chrome's 132-character limit.
+- Version: 1.2.0.
+- Description: 86 characters, under Chrome's 132-character limit.
 - All icon, popup, service-worker, content-script, and CSS references exist.
 
 ## Permissions
@@ -21,7 +21,8 @@ Status: **Prepared for Chrome Web Store submission based on the audited implemen
 ## Host permissions
 
 - No `host_permissions` key.
-- Static content-script scope is limited to `https://dev.azure.com/*` and `https://*.visualstudio.com/*`.
+- Static content-script scope is limited to `https://dev.azure.com/*`, `https://*.visualstudio.com/*`, and `https://github.com/*`.
+- GitHub code further limits processing to repository/directory READMEs and rendered `.md`/`.markdown` file roots.
 - No `<all_urls>` access.
 
 ## Remote code
@@ -34,15 +35,15 @@ No background `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, analytics, o
 
 ## Stored data
 
-Only `rtlFixEnabled: boolean` is persisted using `chrome.storage.local`. No Azure DevOps content or identifying site information is stored.
+Only `rtlFixEnabled: boolean` is persisted using `chrome.storage.local`. No Azure DevOps or GitHub content or identifying site information is stored.
 
 ## Locally processed data
 
-When enabled, rendered Azure DevOps website and user-generated content may be read transiently from the DOM to classify text direction. This can include titles, descriptions, discussions, Acceptance Criteria, Repro Steps, and other rendered text fields.
+When enabled, rendered Azure DevOps content and supported GitHub Markdown may be read transiently from the DOM to classify text direction. GitHub issues, pull requests, comments, Discussions, raw views, code views, diffs, and editors are excluded.
 
 ## Third-party data sharing
 
-No Azure DevOps content or usage data is transmitted automatically to the developer or third parties. The Gmail draft contains only a static template and extension version unless the user adds information, and nothing is sent until the user chooses to send it.
+No Azure DevOps or GitHub content or usage data is transmitted automatically to the developer or third parties. The Gmail draft contains only a static template and extension version unless the user adds information, and nothing is sent until the user chooses to send it.
 
 ## Analytics
 
@@ -56,19 +57,20 @@ None. No profiling, affiliate links, or monetization logic exists.
 
 - Default setting is OFF.
 - Processing begins only when the stored user preference is enabled.
-- Text and Azure-owned inline styles are not rewritten.
+- Text and site-owned inline styles are not rewritten.
 - Disabling removes the extension-added class.
 - No obvious credential assignments or private-key blocks were found in the repository scan.
 
 ## Tests
 
-- Automated detector, manifest, permission, icon, popup-report, and Rooster fixture tests pass.
+- Automated detector, manifest, permission, icon, popup-report, adapter-scope, GitHub Markdown, and Rooster fixture tests pass.
 - Browser fixture confirms the actual inline-LTR Rooster line computes to RTL while enabled and restores to LTR when disabled.
+- Browser fixture confirms GitHub logical blocks, list markers, inline/fenced code, dynamic insertion, exact text preservation, and disable cleanup.
 - Exact `textContent` preservation is asserted.
 
 ## Release package
 
-`npm run package` creates `dist/azure-devops-rtl-fixer-v1.0.0.zip` with `manifest.json` at the ZIP root. Only `manifest.json`, `icons/`, and `src/` are shipped.
+`npm run package` creates `dist/azure-devops-rtl-fixer-v1.2.0.zip` with `manifest.json` at the ZIP root. Only `manifest.json`, `icons/`, and `src/` are shipped.
 
 ## Outstanding manual tasks
 
@@ -77,5 +79,6 @@ None. No profiling, affiliate links, or monetization logic exists.
 - Produce sanitized Store screenshots and promotional artwork.
 - Decide whether the current Azure-like logo and product naming present unacceptable trademark or affiliation risk. The 128px artwork also sits close to some canvas edges, which may be a Store presentation/padding concern; it was preserved as instructed.
 - Perform final real-Chrome and real-Azure-DevOps smoke tests with the exact release candidate.
+- Perform final real-Chrome tests on a GitHub README, rendered `.md` file, client-side navigation, and excluded GitHub surfaces.
 - Verify that **Report an issue** opens the expected pre-filled Gmail draft without Azure DevOps data.
 - Complete Dashboard disclosures, upload assets/ZIP, and submit for review.

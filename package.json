@@ -1,6 +1,6 @@
 {
   "name": "azure-devops-rtl-fixer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "A lightweight Chrome extension for readable Persian and Arabic text in Azure DevOps and GitHub Markdown.",
   "scripts": {

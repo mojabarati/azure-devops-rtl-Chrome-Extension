@@ -3,10 +3,10 @@
 ## Repository and release
 
 - [x] Manifest V3 reviewed.
-- [x] Version finalized as `1.0.0` for the first planned stable public release.
+- [x] Version finalized as `1.2.0` for the GitHub rendered-Markdown feature release.
 - [x] Manifest description reviewed and within 132 characters.
 - [x] Permissions audited and minimized.
-- [x] Website access limited to supported Azure DevOps hosts.
+- [x] Website access limited to supported Azure DevOps hosts and `github.com`.
 - [x] `<all_urls>` absent.
 - [x] Remote-code audit passed.
 - [x] Background network-call audit passed; optional Gmail navigation documented.
@@ -20,6 +20,7 @@
 - [x] Production icons validated.
 - [x] Tests passing.
 - [x] Rooster computed-direction regression passing.
+- [x] GitHub rendered-Markdown scope, direction, code-isolation, dynamic-content, and cleanup regression passing.
 - [x] Release ZIP generated.
 - [x] `manifest.json` verified at ZIP root.
 - [x] Release ZIP limited to runtime files.
@@ -40,6 +41,8 @@
 - [ ] Verify **Report an issue** opens the expected pre-filled Gmail draft and includes no Azure DevOps data automatically.
 - [ ] Verify RTL behavior on a sanitized Azure DevOps work item.
 - [ ] Verify OFF restoration on a real Azure DevOps work item.
+- [ ] Verify RTL behavior and OFF restoration on a public GitHub README and rendered `.md` file.
+- [ ] Verify GitHub issues, comments, code views, and diffs remain unchanged.
 - [ ] Inspect Chrome DevTools for extension-originated network activity and console errors.
 - [ ] Manually smoke-test the exact ZIP contents before upload.
 - [ ] Register or confirm the Chrome Web Store developer account.

@@ -10,7 +10,7 @@ const manifest = JSON.parse(fs.readFileSync(path.join(projectRoot, "manifest.jso
 
 test("uses Manifest V3 and the expected release version", () => {
   assert.equal(manifest.manifest_version, 3);
-  assert.equal(manifest.version, "1.1.0");
+  assert.equal(manifest.version, "1.2.0");
   assert.ok(manifest.description.length <= 132);
 });
 
