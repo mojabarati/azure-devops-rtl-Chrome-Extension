@@ -4,7 +4,7 @@
   // Azure-specific hints live in this one file so they can be revised without
   // changing the generic DOM processor. Generic semantic elements remain the
   // primary path; these hints cover common work-item fields and rich editors.
-  root.AdoRtlSelectors = Object.freeze({
+  const selectors = Object.freeze({
     roosterEditor: ".lean-rooster.rooster-editor",
     semanticText: [
       "p",
@@ -65,5 +65,20 @@
       ".rooster-command-bar",
       ".monaco-editor"
     ].join(",")
+  });
+
+  root.AdoRtlSelectors = selectors;
+  root.AdoRtlSiteAdapter = Object.freeze({
+    id: "azure-devops",
+    selectors,
+    containsBlock(block) {
+      return Boolean(block?.isConnected);
+    },
+    getProcessingScopes(candidate) {
+      return candidate ? [{ root: candidate, boundary: null }] : [];
+    },
+    isPageSupported() {
+      return true;
+    }
   });
 })(globalThis);

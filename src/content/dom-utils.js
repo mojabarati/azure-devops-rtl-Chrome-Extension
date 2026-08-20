@@ -88,16 +88,20 @@
     return null;
   }
 
-  function findLogicalTextBlock(textNode, selectors) {
+  function isInsideBoundary(element, boundary) {
+    return !boundary || element === boundary || boundary.contains?.(element);
+  }
+
+  function findLogicalTextBlock(textNode, selectors, boundary = null) {
     const parent = textNode?.parentElement;
-    if (!parent || isIgnored(parent, selectors)) {
+    if (!parent || !isInsideBoundary(parent, boundary) || isIgnored(parent, selectors)) {
       return null;
     }
 
     // The LI owns the native list marker. Target it instead of a nested span,
     // paragraph, or Rooster line DIV so direction moves both text and marker.
     const listItem = parent.closest("li");
-    if (listItem && !isIgnored(listItem, selectors)) {
+    if (listItem && isInsideBoundary(listItem, boundary) && !isIgnored(listItem, selectors)) {
       return listItem;
     }
 
@@ -105,22 +109,25 @@
     // line DIVs own Azure's inline direction and must be processed instead of
     // treating the whole editor as one editable paragraph.
     const roosterEditor = parent.closest(selectors.roosterEditor);
-    if (roosterEditor) {
+    if (roosterEditor && isInsideBoundary(roosterEditor, boundary)) {
       return findRoosterTextBlock(textNode, roosterEditor);
     }
 
     const editable = parent.closest(selectors.editable);
-    if (editable && !isIgnored(editable, selectors)) {
+    if (editable && isInsideBoundary(editable, boundary) && !isIgnored(editable, selectors)) {
       return editable;
     }
 
     const semanticBlock = parent.closest(LOGICAL_BLOCK_SELECTOR);
-    if (semanticBlock && !isIgnored(semanticBlock, selectors)) {
+    if (semanticBlock && isInsideBoundary(semanticBlock, boundary) && !isIgnored(semanticBlock, selectors)) {
       return semanticBlock;
     }
 
     let current = parent;
     while (current && current !== current.ownerDocument?.body) {
+      if (current === boundary) {
+        break;
+      }
       if (isLeafTextDiv(current)) {
         return current;
       }

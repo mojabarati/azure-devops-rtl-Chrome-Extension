@@ -7,17 +7,18 @@
   const MAX_BLOCKS_PER_SLICE = 100;
   const ROOSTER_INPUT_DELAY_MS = 80;
   const detector = globalThis.AdoRtlDetector;
-  const selectors = globalThis.AdoRtlSelectors;
   const domUtils = globalThis.AdoRtlDomUtils;
+  const siteAdapter = globalThis.AdoRtlSiteAdapter;
+  const selectors = siteAdapter?.selectors;
 
-  if (!detector || !selectors || !domUtils) {
+  if (!detector || !siteAdapter || !selectors || !domUtils) {
     return;
   }
 
   let enabled = false;
   let observer = null;
   let flushScheduled = false;
-  const pendingRoots = new Set();
+  const pendingRoots = new Map();
   const modifiedBlocks = new Set();
   const originalClassState = new WeakMap();
   const roosterInputTimers = new Map();
@@ -129,9 +130,13 @@
     }
   }
 
-  function addTextNodeBlock(textNode, blocks) {
+  function addTextNodeBlock(textNode, blocks, boundary) {
     const existingBlock = textNode.parentElement?.closest?.(`.${RTL_CLASS}`);
-    if (existingBlock && modifiedBlocks.has(existingBlock)) {
+    if (
+      existingBlock &&
+      modifiedBlocks.has(existingBlock) &&
+      (!boundary || boundary.contains(existingBlock))
+    ) {
       blocks.add(existingBlock);
     }
 
@@ -139,17 +144,17 @@
       return;
     }
 
-    const block = domUtils.findLogicalTextBlock(textNode, selectors);
+    const block = domUtils.findLogicalTextBlock(textNode, selectors, boundary);
     if (block) {
       blocks.add(block);
     }
   }
 
-  function collectBlocks(root) {
+  function collectBlocks(root, boundary = null) {
     const blocks = new Set();
 
     if (root?.nodeType === Node.TEXT_NODE) {
-      addTextNodeBlock(root, blocks);
+      addTextNodeBlock(root, blocks, boundary);
       return blocks;
     }
 
@@ -173,7 +178,7 @@
     const walker = (root.ownerDocument || document).createTreeWalker(root, NodeFilter.SHOW_TEXT);
     let textNode = walker.nextNode();
     while (textNode) {
-      addTextNodeBlock(textNode, blocks);
+      addTextNodeBlock(textNode, blocks, boundary);
       textNode = walker.nextNode();
     }
 
@@ -199,8 +204,8 @@
     return blocks;
   }
 
-  function processRoot(root) {
-    const blocks = [...collectBlocks(root)];
+  function processRoot(root, boundary = null) {
+    const blocks = [...collectBlocks(root, boundary)];
     let index = 0;
 
     function processSlice(deadline) {
@@ -252,7 +257,14 @@
       return;
     }
 
-    pendingRoots.add(root);
+    for (const scope of siteAdapter.getProcessingScopes(root, document, globalThis.location)) {
+      pendingRoots.set(scope.root, scope.boundary);
+    }
+
+    if (pendingRoots.size === 0) {
+      return;
+    }
+
     if (!flushScheduled) {
       flushScheduled = true;
       scheduleIdle(flushPending);
@@ -266,17 +278,25 @@
       return;
     }
 
-    const roots = [...pendingRoots];
+    const roots = [...pendingRoots.entries()];
     pendingRoots.clear();
 
-    for (const root of roots) {
+    for (const [root, boundary] of roots) {
       if (!root || (isElement(root) && !root.isConnected)) {
         continue;
       }
-      if (roots.some((other) => other !== root && other?.contains?.(root))) {
+      if (roots.some(([other]) => other !== root && other?.contains?.(root))) {
         continue;
       }
-      processRoot(root);
+      processRoot(root, boundary);
+    }
+  }
+
+  function restoreOutOfScopeBlocks() {
+    for (const block of [...modifiedBlocks]) {
+      if (!siteAdapter.containsBlock(block, document, globalThis.location)) {
+        restoreBlock(block);
+      }
     }
   }
 
@@ -289,6 +309,8 @@
   }
 
   function onMutations(mutations) {
+    restoreOutOfScopeBlocks();
+
     for (const mutation of mutations) {
       enqueue(mutation.target);
       for (const node of mutation.addedNodes || []) {
@@ -336,7 +358,9 @@
     }
 
     enabled = true;
-    processRoot(document);
+    for (const scope of siteAdapter.getProcessingScopes(document, document, globalThis.location)) {
+      processRoot(scope.root, scope.boundary);
+    }
     observer = new MutationObserver(onMutations);
     observer.observe(document.documentElement, {
       childList: true,
@@ -376,13 +400,19 @@
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message?.type === "ADO_RTL_GET_STATUS") {
-      sendResponse({ enabled, supported: true });
+      sendResponse({
+        enabled,
+        supported: siteAdapter.isPageSupported(document, globalThis.location)
+      });
       return;
     }
 
     if (message?.type === "ADO_RTL_SET_ENABLED") {
       setEnabled(message.enabled);
-      sendResponse({ enabled, supported: true });
+      sendResponse({
+        enabled,
+        supported: siteAdapter.isPageSupported(document, globalThis.location)
+      });
     }
   });
 
