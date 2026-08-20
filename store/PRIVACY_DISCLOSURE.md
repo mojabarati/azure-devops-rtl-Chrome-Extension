@@ -36,7 +36,7 @@ Chrome injects static content scripts only on `dev.azure.com`, `*.visualstudio.c
 
 ## Stored data
 
-- Stored: one Boolean preference, `rtlFixEnabled`, in `chrome.storage.local`.
+- Stored: two Boolean platform preferences, `azureRtlFixEnabled` and `githubRtlFixEnabled`, in `chrome.storage.local`; an existing `rtlFixEnabled` value may be read once for migration.
 - Not stored: Azure DevOps or GitHub page content, comments, titles, Markdown, URLs, usernames, organization/project/repository information, or credentials.
 
 ## Transmission and collection by the developer

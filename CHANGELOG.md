@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Independent Azure DevOps and GitHub popup toggles with default-OFF settings and backward-compatible preference migration.
+
+### Changed
+
+- Redesigned the popup around platform controls and platform-aware current-page status.
+
 ## [1.2.0] — 2026-08-20
 
 ### Added

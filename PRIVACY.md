@@ -46,7 +46,7 @@ Opening Gmail is an intentional, user-initiated navigation to a third-party serv
 
 ## Data storage
 
-Azure DevOps and GitHub page contents are not stored by the extension. The only extension-managed stored value is the Boolean `rtlFixEnabled` ON/OFF preference, saved locally with `chrome.storage.local` so the user's choice survives page reloads and browser restarts.
+Azure DevOps and GitHub page contents are not stored by the extension. The only extension-managed stored values are the Boolean `azureRtlFixEnabled` and `githubRtlFixEnabled` ON/OFF preferences, saved locally with `chrome.storage.local` so each platform choice survives page reloads and browser restarts. During upgrade, an existing Boolean `rtlFixEnabled` preference is used only to initialize missing platform-specific settings.
 
 The extension does not use `chrome.storage.sync`.
 

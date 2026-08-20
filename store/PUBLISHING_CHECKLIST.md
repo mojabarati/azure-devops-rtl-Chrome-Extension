@@ -37,8 +37,8 @@
 - [ ] Verify screenshots contain no private URLs, credentials, employee data, customer data, or confidential work-item content.
 - [ ] Load the exact unpacked release candidate in desktop Chrome.
 - [ ] Verify toolbar icon, management-page icon, and popup logo.
-- [ ] Verify the toggle and preference after a real browser restart.
-- [ ] Verify **Report an issue** opens the expected pre-filled Gmail draft and includes no Azure DevOps data automatically.
+- [ ] Verify both platform toggles and preferences after a real browser restart.
+- [ ] Verify **Report an issue** opens the expected pre-filled Gmail draft and includes no Azure DevOps or GitHub data automatically.
 - [ ] Verify RTL behavior on a sanitized Azure DevOps work item.
 - [ ] Verify OFF restoration on a real Azure DevOps work item.
 - [ ] Verify RTL behavior and OFF restoration on a public GitHub README and rendered `.md` file.

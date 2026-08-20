@@ -15,7 +15,7 @@ Status: **Prepared for Chrome Web Store submission based on the audited implemen
 ## Permissions
 
 - `storage` is the only Chrome API permission.
-- It stores only the local Boolean `rtlFixEnabled` preference.
+- It stores only the local Boolean `azureRtlFixEnabled` and `githubRtlFixEnabled` preferences, with one-time fallback from the legacy `rtlFixEnabled` value.
 - No `tabs`, `activeTab`, `scripting`, network interception, cookies, history, notifications, or management permission.
 
 ## Host permissions
@@ -35,7 +35,7 @@ No background `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, analytics, o
 
 ## Stored data
 
-Only `rtlFixEnabled: boolean` is persisted using `chrome.storage.local`. No Azure DevOps or GitHub content or identifying site information is stored.
+Only `azureRtlFixEnabled: boolean` and `githubRtlFixEnabled: boolean` are persisted as current settings using `chrome.storage.local`. A legacy `rtlFixEnabled: boolean` value may remain after migration but is not the ongoing source of truth. No Azure DevOps or GitHub content or identifying site information is stored.
 
 ## Locally processed data
 
@@ -56,7 +56,7 @@ None. No profiling, affiliate links, or monetization logic exists.
 ## Security
 
 - Default setting is OFF.
-- Processing begins only when the stored user preference is enabled.
+- Processing begins only when the stored preference for the current platform is enabled.
 - Text and site-owned inline styles are not rewritten.
 - Disabling removes the extension-added class.
 - No obvious credential assignments or private-key blocks were found in the repository scan.

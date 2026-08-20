@@ -34,7 +34,7 @@ Azure DevOps and GitHub use left-to-right interfaces, which can make Persian and
 - 📋 Correctly positions text and native markers in ordered and unordered lists.
 - 🧩 Supports Azure DevOps Rooster rich-text content, including inline LTR overrides.
 - ⚡ Handles dynamically rendered SPA content without continuous polling.
-- 🎚️ Provides a persistent ON/OFF toggle that defaults to OFF.
+- 🎚️ Provides independent, persistent Azure DevOps and GitHub ON/OFF controls that default to OFF.
 - 🐞 Opens a pre-filled Gmail draft from the popup when the user chooses **Report an issue**.
 - 🔒 Processes supported page content locally with no analytics, telemetry, or automatic transmission.
 - ↩️ Removes only extension-added presentation changes when disabled.
@@ -80,9 +80,9 @@ The extension has not been published yet. A Chrome Web Store link will be added 
 
 1. Open a supported Azure DevOps page, GitHub repository README, or rendered Markdown file.
 2. Select the **Azure DevOps RTL Fixer** toolbar icon.
-3. Turn **RTL Fix** on.
+3. Turn on the switch for **Azure DevOps** or **GitHub** as needed.
 
-The preference is stored locally and survives browser restarts. Turning the feature off removes its presentation changes immediately without reloading the page.
+Each platform preference is stored locally and survives browser restarts. The platforms can be enabled independently, and turning either one off removes its presentation changes immediately without reloading the page.
 
 ## 🧩 How It Works
 
@@ -111,6 +111,7 @@ manifest.json
 icons/
 src/
 ├── background/service-worker.js
+├── shared/preferences.js
 ├── content/
 │   ├── azure-selectors.js
 │   ├── github-markdown-adapter.js
@@ -126,13 +127,13 @@ src/
 
 ## 🔒 Privacy & Permissions
 
-All direction detection happens locally in the browser. The RTL feature does not persist or transmit Azure DevOps or GitHub Markdown content to the developer or third parties. The only stored value is the Boolean `rtlFixEnabled` preference in `chrome.storage.local`.
+All direction detection happens locally in the browser. The RTL feature does not persist or transmit Azure DevOps or GitHub Markdown content to the developer or third parties. The extension stores only the Boolean `azureRtlFixEnabled` and `githubRtlFixEnabled` preferences in `chrome.storage.local`; an existing `rtlFixEnabled` value is used once to initialize both settings during migration.
 
 Choosing **Report an issue** opens Gmail in a new tab with only a static report template and the extension version pre-filled. No Azure DevOps or GitHub page text, URL, repository, organization, project, or work-item data is added automatically, and the user decides whether to edit, send, or discard the draft.
 
 The manifest requests one Chrome API permission:
 
-- `storage` — remembers the ON/OFF preference locally.
+- `storage` — remembers the two platform ON/OFF preferences locally.
 
 The extension does not request `tabs`, `activeTab`, `scripting`, `webRequest`, cookies, history, or `<all_urls>` access. It contains no analytics, telemetry, tracking, advertising, profiling, remote code, or background network requests.
 
@@ -156,7 +157,7 @@ Debug logging is disabled by default. For local troubleshooting, set `DEBUG` to 
 
 ## 🧪 Testing
 
-The automated suite covers Persian, Arabic-script, English, mixed-language, list-item, neutral technical-value, Manifest V3, permission, adapter-scope, and icon-reference behavior. Browser fixtures cover the Azure DevOps Rooster DOM and GitHub rendered Markdown headings, paragraphs, nested lists, task lists, blockquotes, tables, links, inline/fenced code, dynamic insertion, exact text preservation, and disable cleanup.
+The automated suite covers Persian, Arabic-script, English, mixed-language, list-item, neutral technical-value, independent platform preferences, legacy migration, Manifest V3, permission, adapter-scope, and icon-reference behavior. Browser fixtures cover the Azure DevOps Rooster DOM and GitHub rendered Markdown headings, paragraphs, nested lists, task lists, blockquotes, tables, links, inline/fenced code, dynamic insertion, exact text preservation, and disable cleanup.
 
 ```bash
 npm test
